@@ -8,14 +8,16 @@
 #include <thread>
 #include <chrono>
 
+using namespace LibSerial;
 class Toughsonic{
 public:
+    
     struct SensorConfig{
         std::string filename = "/dev/ttyUSB0";
-        LibSerial::SerialStreamBuf::BaudRateEnum baudRate = LibSerial::SerialStreamBuf::BaudRateEnum::BAUD_9600;
-        LibSerial::SerialStreamBuf::CharSizeEnum characterSize = LibSerial::SerialStreamBuf::CharSizeEnum::CHAR_SIZE_8;
-        LibSerial::SerialStreamBuf::FlowControlEnum flowControl = LibSerial::SerialStreamBuf::FlowControlEnum::FLOW_CONTROL_DEFAULT;
-        LibSerial::SerialStreamBuf::ParityEnum parityType = LibSerial::SerialStreamBuf::ParityEnum::PARITY_NONE;
+        SerialStreamBuf::BaudRateEnum baudRate = SerialStreamBuf::BaudRateEnum::BAUD_9600;
+        SerialStreamBuf::CharSizeEnum characterSize = SerialStreamBuf::CharSizeEnum::CHAR_SIZE_8;
+        SerialStreamBuf::FlowControlEnum flowControl = SerialStreamBuf::FlowControlEnum::FLOW_CONTROL_DEFAULT;
+        SerialStreamBuf::ParityEnum parityType = SerialStreamBuf::ParityEnum::PARITY_NONE;
         float stopBits = 1;
     };
 
@@ -27,7 +29,7 @@ public:
 private:    
     ros::NodeHandle n;
     LibSerial::SerialStream sensorStream;
-    atomic<bool> running;
+    std::atomic<bool> running;
 
 
 };
