@@ -6,10 +6,10 @@
 #include <SerialStream.h>
 #include <atomic>
 #include <thread>
+#include <chrono>
 
 class Toughsonic{
 public:
-
     struct SensorConfig{
         std::string filename = "/dev/ttyUSB0";
         LibSerial::SerialStreamBuf::BaudRateEnum baudRate = LibSerial::SerialStreamBuf::BaudRateEnum::BAUD_9600;
@@ -27,6 +27,7 @@ public:
 private:    
     ros::NodeHandle n;
     LibSerial::SerialStream sensorStream;
+    atomic<bool> running;
 
 
 };

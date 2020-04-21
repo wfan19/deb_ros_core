@@ -14,6 +14,9 @@ Toughsonic::~Toughsonic(){
 }
 
 void Toughsonic::start(unsigned int updateIntervalMS){
-
-}
+//     running = true;
+//     while(running){
+//         ROS_INFO("")
+//     }
+// }
 
