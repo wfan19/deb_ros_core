@@ -5,7 +5,11 @@ int main(int argc, char **argv){
     ros::init(argc, argv, "toughsonic");
     ros::NodeHandle n;
 
-    Toughsonic mToughSonic(n);
+
+    Toughsonic::SensorConfig sensorConfig;
+    sensorConfig.baudrate = 9600;
+    sensorConfig.filename = "/dev/ttyUSB0";
+    Toughsonic mToughsonic(n, sensorConfig);
 
     ROS_INFO("Spinning node");
     while(ros::ok()){

@@ -3,13 +3,24 @@
 
 #include "ros/ros.h"
 
+#include <SerialStream.h>
+
 class Toughsonic{
 public:
-    Toughsonic(ros::NodeHandle nh);
+
+    struct SensorConfig{
+        float baudrate;
+        std::string filename;
+    };
+
+    Toughsonic(ros::NodeHandle nh, SensorConfig sensorConfig);
     ~Toughsonic();
 
-private:
+private:    
     ros::NodeHandle n;
+    LibSerial::SerialStream sensorStream;
+
+
 };
 
 #endif
