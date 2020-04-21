@@ -7,7 +7,6 @@ int main(int argc, char **argv){
 
 
     Toughsonic::SensorConfig sensorConfig;
-    sensorConfig.baudrate = 9600;
     sensorConfig.filename = "/dev/ttyUSB0";
     Toughsonic mToughsonic(n, sensorConfig);
 
