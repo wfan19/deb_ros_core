@@ -25,11 +25,14 @@ public:
     ~Toughsonic();
 
     void start(unsigned int updateIntervalMS);
+    void close();
 
 private:    
     ros::NodeHandle n;
     LibSerial::SerialStream sensorStream;
-    std::atomic<bool> running;
+    
+    std::atomic<bool> running{false};
+    std::thread updateThread;
 
 
 };

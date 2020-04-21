@@ -9,11 +9,15 @@ int main(int argc, char **argv){
     Toughsonic::SensorConfig sensorConfig;
     sensorConfig.filename = "/dev/ttyUSB0";
     Toughsonic mToughsonic(n, sensorConfig);
+    mToughsonic.start(500);
 
     ROS_INFO("Spinning node");
     while(ros::ok()){
         ros::spin();
     }
+
+    mToughsonic.close();
+    // mToughsonic.~Toughsonic();
 
     // node has been terminated, end connection
     // <insert connection termination code>

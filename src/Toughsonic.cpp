@@ -10,13 +10,27 @@ Toughsonic::Toughsonic(ros::NodeHandle nh, Toughsonic::SensorConfig sensorConfig
 }
 
 Toughsonic::~Toughsonic(){
-    sensorStream.Close();
+    this->close();
 }
 
 void Toughsonic::start(unsigned int updateIntervalMS){
-//     running = true;
-//     while(running){
-//         ROS_INFO("")
-//     }
+    updateThread = std::thread([&](){
+        running = true;
+        const auto interval = std::chrono::milliseconds(updateIntervalMS);
+        while(running){
+            const int bufferSize = 256;
+            char inputBuffer[bufferSize];
+            ROS_INFO("Reading from stream");
+            sensorStream.read(inputBuffer,);
+            ROS_INFO("Serial read: %s", read);
+            std::this_thread::sleep_for(interval);
+        }
+        ROS_INFO("Killing thread");
+    });
 }
 
+void Toughsonic::close(){
+    running = false;
+    updateThread.join();
+    sensorStream.Close();
+}
