@@ -9,6 +9,7 @@
 #include <chrono>
 #include <iostream>
 #include <string>
+#include <vector>
 
 using namespace LibSerial;
 class Toughsonic{
