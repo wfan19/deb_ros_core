@@ -28,30 +28,28 @@ void Toughsonic::start(unsigned int updateIntervalMS){
                 if((int)readChar == 13){
                     break;
                 }
-                // ROS_INFO("Reading char %c", readChar);
                 measurement.push_back(readChar);
-                // if(measurement.size() >= 5){
-                //     break;
-                // }
             }
 
             std::string readString_Original(measurement.begin(), measurement.end());
-            if(measurement[0] == '0'){
+            if(measurement[0] == '0' && measurement.size() > 1){
                 measurement.erase(measurement.begin());
                 measurement.shrink_to_fit();
             }
+
             std::string readString_Sanitized(measurement.begin(), measurement.end());
 
-            std::string testString = "2000";
-            
-            // float dist = std::stof(readString_Sanitized);
-            // dist *= 0.003384;
+            double dist = -1;
+            try{            
+                dist = std::stod(readString_Sanitized);
+                dist *= 0.003384;
+            } catch(std::invalid_argument &e){
+                ROS_ERROR("stod error, invalid argument");
+                ROS_ERROR("Error: %s", e.what());
+            }
 
-            // double dist = std::stod(testString);
-            // dist *= 0.003384;
-
-            ROS_INFO("Serial read: %s", readString_Original.c_str());
-            ROS_INFO("Serial read sanitized: (%s)", readString_Sanitized.c_str());
+            // ROS_INFO("Serial read: %s", readString_Original.c_str());
+            // ROS_INFO("Serial read sanitized: (%s)", readString_Sanitized.c_str());
             // ROS_INFO("Distance: %f", dist);
             measurement.clear();
             std::this_thread::sleep_for(interval);
