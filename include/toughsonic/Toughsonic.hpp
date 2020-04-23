@@ -7,6 +7,8 @@
 #include <atomic>
 #include <thread>
 #include <chrono>
+#include <iostream>
+#include <string>
 
 using namespace LibSerial;
 class Toughsonic{
@@ -14,10 +16,10 @@ public:
     
     struct SensorConfig{
         std::string filename = "/dev/ttyUSB0";
-        SerialStreamBuf::BaudRateEnum baudRate = SerialStreamBuf::BaudRateEnum::BAUD_9600;
-        SerialStreamBuf::CharSizeEnum characterSize = SerialStreamBuf::CharSizeEnum::CHAR_SIZE_8;
-        SerialStreamBuf::FlowControlEnum flowControl = SerialStreamBuf::FlowControlEnum::FLOW_CONTROL_DEFAULT;
-        SerialStreamBuf::ParityEnum parityType = SerialStreamBuf::ParityEnum::PARITY_NONE;
+        SerialStreamBuf::BaudRateEnum baudRate = SerialStreamBuf::BAUD_9600;
+        SerialStreamBuf::CharSizeEnum characterSize = SerialStreamBuf::CHAR_SIZE_8;
+        SerialStreamBuf::FlowControlEnum flowControl = SerialStreamBuf::FLOW_CONTROL_DEFAULT;
+        SerialStreamBuf::ParityEnum parityType = SerialStreamBuf::PARITY_NONE;
         float stopBits = 1;
     };
 

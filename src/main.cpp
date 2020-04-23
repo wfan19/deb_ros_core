@@ -8,8 +8,9 @@ int main(int argc, char **argv){
 
     Toughsonic::SensorConfig sensorConfig;
     sensorConfig.filename = "/dev/ttyUSB0";
+    sensorConfig.baudRate = LibSerial::SerialStreamBuf::BAUD_9600;
     Toughsonic mToughsonic(n, sensorConfig);
-    mToughsonic.start(500);
+    mToughsonic.start(1);
 
     ROS_INFO("Spinning node");
     while(ros::ok()){
