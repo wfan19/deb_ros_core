@@ -1,8 +1,6 @@
 #ifndef TOUGHSONIC_HPP
 #define TOUGHSONIC_HPP
 
-#include "ros/ros.h"
-
 #include <SerialStream.h>
 #include <atomic>
 #include <thread>
@@ -25,24 +23,21 @@ public:
         float stopBits = 1;
     };
 
-    Toughsonic(ros::NodeHandle nh, SensorConfig sensorConfig);
+    Toughsonic(SensorConfig sensorConfig);
     ~Toughsonic();
 
     void start(unsigned int updateIntervalMS);
     void close();
 
-    void setSensorReadCallback(std::function<void(int)> callback);
-
-    virtual void onSensorRead(float dist);
+    void setSensorReadCallback(std::function<void(double)> callback);
 
 private:    
-    ros::NodeHandle n;
     LibSerial::SerialStream sensorStream;
     
     std::atomic<bool> running{false};
     std::thread updateThread;
 
-    std::function<void(int)> onSensorReadCallback;
+    std::function<void(double)> onSensorReadCallback;
 };
 
 #endif

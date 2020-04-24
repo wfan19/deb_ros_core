@@ -1,7 +1,6 @@
 #include "../include/toughsonic/Toughsonic.hpp"
 
-Toughsonic::Toughsonic(ros::NodeHandle nh, Toughsonic::SensorConfig sensorConfig){
-    this->n = nh;
+Toughsonic::Toughsonic(Toughsonic::SensorConfig sensorConfig){
     sensorStream.Open(sensorConfig.filename);
     sensorStream.SetBaudRate(sensorConfig.baudRate);
     sensorStream.SetCharSize(sensorConfig.characterSize);
@@ -43,21 +42,14 @@ void Toughsonic::start(unsigned int updateIntervalMS){
             try{            
                 dist = std::stod(readString_Sanitized);
                 dist *= 0.003384;
-            } catch(std::invalid_argument &e){
-                ROS_ERROR("stod error, invalid argument");
-                ROS_ERROR("Error: %s", e.what());
-            }
+            } catch(std::invalid_argument &e){}
 
             this->onSensorReadCallback(dist);
 
-            // ROS_INFO("Serial read: %s", readString_Original.c_str());
-            // ROS_INFO("Serial read sanitized: (%s)", readString_Sanitized.c_str());
-            // ROS_INFO("Distance: %f", dist);
             measurement.clear();
             std::this_thread::sleep_for(interval);
 
         }
-        ROS_INFO("Killing thread");
     });
 }
 
@@ -67,6 +59,6 @@ void Toughsonic::close(){
     sensorStream.Close();
 }
 
-void Toughsonic::setSensorReadCallback(std::function<void(int)> callback){
+void Toughsonic::setSensorReadCallback(std::function<void(double)> callback){
     this->onSensorReadCallback = callback;
 }
