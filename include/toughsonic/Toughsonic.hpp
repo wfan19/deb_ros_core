@@ -10,6 +10,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <functional>
 
 using namespace LibSerial;
 class Toughsonic{
@@ -30,6 +31,10 @@ public:
     void start(unsigned int updateIntervalMS);
     void close();
 
+    void setSensorReadCallback(std::function<void(int)> callback);
+
+    virtual void onSensorRead(float dist);
+
 private:    
     ros::NodeHandle n;
     LibSerial::SerialStream sensorStream;
@@ -37,7 +42,7 @@ private:
     std::atomic<bool> running{false};
     std::thread updateThread;
 
-
+    std::function<void(int)> onSensorReadCallback;
 };
 
 #endif

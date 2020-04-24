@@ -48,6 +48,8 @@ void Toughsonic::start(unsigned int updateIntervalMS){
                 ROS_ERROR("Error: %s", e.what());
             }
 
+            this->onSensorReadCallback(dist);
+
             // ROS_INFO("Serial read: %s", readString_Original.c_str());
             // ROS_INFO("Serial read sanitized: (%s)", readString_Sanitized.c_str());
             // ROS_INFO("Distance: %f", dist);
@@ -63,4 +65,8 @@ void Toughsonic::close(){
     running = false;
     updateThread.join();
     sensorStream.Close();
+}
+
+void Toughsonic::setSensorReadCallback(std::function<void(int)> callback){
+    this->onSensorReadCallback = callback;
 }

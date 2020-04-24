@@ -10,6 +10,9 @@ int main(int argc, char **argv){
     sensorConfig.filename = "/dev/ttyUSB0";
     sensorConfig.baudRate = LibSerial::SerialStreamBuf::BAUD_9600;
     Toughsonic mToughsonic(n, sensorConfig);
+    mToughsonic.setSensorReadCallback([&](int dist){
+        ROS_INFO("Distance: %d", dist);
+    });
     mToughsonic.start(1);
 
     ROS_INFO("Spinning node");
