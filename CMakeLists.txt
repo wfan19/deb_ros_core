@@ -121,9 +121,9 @@ include_directories(
 add_library(Toughsonic src/Toughsonic.cpp)
 target_link_libraries(Toughsonic serial)
 
-add_executable(node_main src/main.cpp)
-target_link_libraries(node_main ${catkin_LIBRARIES})
-target_link_libraries(node_main Toughsonic)
+add_executable(toughsonic_node_main src/main.cpp)
+target_link_libraries(toughsonic_node_main ${catkin_LIBRARIES})
+target_link_libraries(toughsonic_node_main Toughsonic)
 
 #############
 ## Install ##
