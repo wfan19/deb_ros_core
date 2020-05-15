@@ -6,7 +6,7 @@ int main(int argc, char **argv){
     ros::init(argc, argv, "toughsonic");
     ros::NodeHandle n;
 
-    ros::Publisher distancePub = n.advertise<std_msgs::Float64>("sensor/distance/value", 1000);
+    ros::Publisher distancePub = n.advertise<std_msgs::Float64>("toughsonic/distance/value", 1000);
 
     Toughsonic::SensorConfig sensorConfig;
     sensorConfig.filename = "/dev/ttyUSB0";
