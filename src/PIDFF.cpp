@@ -6,10 +6,11 @@ PIDFF::PIDFF(double p, double i, double d, double ff, double iMin, double iMax, 
     resetIntegrator();
 }
 
-PIDFF::PIDFF(PIDFF::PIDConfig pidConfig)
+PIDFF::PIDFF(PIDFF::PIDConfig pidConfig, ros::NodeHandle nh)
     : kp(pidConfig.kp), ki(pidConfig.ki), kd(pidConfig.kd), kff(pidConfig.kff), imin(pidConfig.imin), imax(pidConfig.imax), min(pidConfig.min), max(pidConfig.max)
 {
     resetIntegrator();
+    n = nh;
 }
 
 PIDFF::PIDFF()
@@ -73,6 +74,8 @@ double PIDFF::update(double target, double current, double currentTime)
     ff = this->kff * target;
 
     lastUpdateTime = currentTime;
+
+    ROS_INFO("dt: %f, error: %f, p: %f, integrator: %f, d: %f, ff: %f", dt, error, p, integrator, d, ff);
 
     return p + integrator + d + ff;
 }

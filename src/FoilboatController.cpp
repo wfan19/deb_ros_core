@@ -3,8 +3,7 @@
 #include <foilboat_controller/FoilboatController.hpp>
 
 using namespace std;
-FoilboatController::FoilboatController(ros::NodeHandle nh, int rate):
-  controllerRate(rate)
+FoilboatController::FoilboatController(ros::NodeHandle nh)
 {
   this->n = nh;
 
@@ -14,7 +13,7 @@ FoilboatController::FoilboatController(ros::NodeHandle nh, int rate):
   {
     ROS_INFO("Found roll_controller pidff config");
     PIDFF::PIDConfig roll_controller_config = convertPIDMapParamToStruct(roll_controller_param_map);
-    roll_controller = PIDFF(roll_controller_config);
+    roll_controller = PIDFF(roll_controller_config, n);
   }
   else
   {
@@ -26,7 +25,7 @@ FoilboatController::FoilboatController(ros::NodeHandle nh, int rate):
   {
     ROS_INFO("Found pitch_controller pidff config");
     PIDFF::PIDConfig pitch_controller_config = convertPIDMapParamToStruct(pitch_controller_param_map);
-    pitch_controller = PIDFF(pitch_controller_config);
+    pitch_controller = PIDFF(pitch_controller_config, n);
   }
   else
   {
@@ -52,11 +51,13 @@ FoilboatController::FoilboatController(ros::NodeHandle nh, int rate):
   if(n.getParam("foilboat_controller/target_topic", target_topic_name))
   {
     target_sub = n.subscribe(target_topic_name, 1000, &FoilboatController::onTarget, this);
+    ROS_INFO("Target subscriber initialized");
   }
 
   if(n.getParam("foilboat_controller/control_topic", control_topic_name))
   {
     control_pub = n.advertise<foilboat_controller::FoilboatControl>(control_topic_name, 100);
+    ROS_INFO("Control publisher initialized");
   }
 }
 
@@ -69,16 +70,17 @@ void FoilboatController::control()
   foilboat_controller::FoilboatControl controlOut;
   // Rotation matrix math is stinky
   tf2::Matrix3x3 quaternion_rotation_matrix(lastOrientation);
-  float last_roll, last_pitch, last_yaw;
-  quaternion_rotation_matrix.getRPY(last_roll, last_pitch, last_yaw)
+  double last_roll, last_pitch, last_yaw;
+  quaternion_rotation_matrix.getRPY(last_roll, last_pitch, last_yaw);
 
   float roll_error = lastTarget->rollTarget - last_roll;
-  rollControl = roll_controller.update(roll_error, lastTarget->rollTarget, ros::Time::now().toSec());
-  controlOut.rightFoil = 0 + rollControl;
-  controlOut.leftFoil = 0 - rollControl;
+  float rollControl = 30 * roll_controller.update(lastTarget->rollTarget, last_roll, ros::Time::now().toSec());
+  ROS_INFO("Roll control: %f, Roll target: %f, Roll error: %f, time: %f", rollControl, lastTarget->rollTarget, roll_error, ros::Time::now().toSec());
+  controlOut.rightFoil = 0 + rollControl * 3.14 / 180;
+  controlOut.leftFoil = 0 - rollControl * 3.14 / 180;
 
   controlOut.elevatorFoil = 0;
-
+  control_pub.publish(controlOut);
 }
 
 void FoilboatController::onImu(const sensor_msgs::Imu::ConstPtr& imuPtr)

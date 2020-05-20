@@ -6,7 +6,7 @@ foilboat_controller:
   target_topic: /plane_ros/target
 
   # Publisher topics
-  control_topic: /planesim_gazebo/command
+  control_topic: /planesim_gazebo/control
 
   # Parameters for the roll controller
   roll_controller:

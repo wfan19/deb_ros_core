@@ -8,6 +8,7 @@
 #include "sensor_msgs/Imu.h"
 #include "sensor_msgs/LaserScan.h"
 #include <tf2/LinearMath/Quaternion.h>
+#include <tf2/LinearMath/Matrix3x3.h>
 
 #include <foilboat_controller/PIDFF.hpp>
 #include <foilboat_controller/FoilboatTarget.h>
@@ -17,7 +18,7 @@ using namespace std;
 class FoilboatController
 {
 public:
-  FoilboatController(ros::NodeHandle nh, int rate);
+  FoilboatController(ros::NodeHandle nh);
   ~FoilboatController();
 
 private:
@@ -38,10 +39,10 @@ private:
   ros::Subscriber target_sub;
   ros::Publisher control_pub;
 
-  sensor_msgs::Imu::ConstPtr lastIMUMsg;
+  sensor_msgs::Imu::ConstPtr lastIMUMsg{new sensor_msgs::Imu};
   tf2::Quaternion lastOrientation;
-  sensor_msgs::LaserScan::ConstPtr lastLaser;
-  foilboat_controller::FoilboatTarget::ConstPtr lastTarget;
+  sensor_msgs::LaserScan::ConstPtr lastLaser{new sensor_msgs::LaserScan};
+  foilboat_controller::FoilboatTarget::ConstPtr lastTarget{new foilboat_controller::FoilboatTarget};
 
   PIDFF roll_controller;
   PIDFF pitch_controller;

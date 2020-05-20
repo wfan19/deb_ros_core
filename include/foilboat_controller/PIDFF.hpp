@@ -1,6 +1,8 @@
 #ifndef PIDFF_HPP
 #define PIDFF_HPP
 
+#include "ros/ros.h"
+
 class PIDFF
 {
 
@@ -18,7 +20,7 @@ public:
     };
 
     PIDFF(double kp, double ki, double kd, double kff, double imin, double imax, double min, double max);
-    PIDFF(PIDFF::PIDConfig pidConfig);
+    PIDFF(PIDFF::PIDConfig pidConfig, ros::NodeHandle nh);
     PIDFF();
     ~PIDFF();
 
@@ -50,6 +52,7 @@ private:
     double lastError{0.0};
 
     double lastUpdateTime{0.0};
+    ros::NodeHandle n;
 
 public:
 
