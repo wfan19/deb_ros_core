@@ -47,8 +47,9 @@ void PIDFF::init(PIDFF::PIDConfig pidConfig)
     this->max = pidConfig.max;
 }
 
-double PIDFF::update(double target, double current, double dt)
+double PIDFF::update(double target, double current, double currentTime)
 {
+    double dt = currentTime - lastUpdateTime;
     float error = target - current;
     
     if(dt <= 0.0){
@@ -70,6 +71,8 @@ double PIDFF::update(double target, double current, double dt)
     
     // Calculate feedforward term
     ff = this->kff * target;
+
+    lastUpdateTime = currentTime;
 
     return p + integrator + d + ff;
 }

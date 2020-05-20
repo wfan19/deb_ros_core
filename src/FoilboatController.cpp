@@ -1,3 +1,5 @@
+#include "geometry_msgs/Quaternion.h"
+
 #include <foilboat_controller/FoilboatController.hpp>
 
 using namespace std;
@@ -31,7 +33,7 @@ FoilboatController::FoilboatController(ros::NodeHandle nh, int rate):
     ROS_INFO("Failed to find param /pitch_controller/pidff");
   }
 
-  string imu_topic_name, laser_topic_name;
+  string imu_topic_name, laser_topic_name, target_topic_name, control_topic_name;
   // Initialize IMU subscriber
   if(n.getParam("foilboat_controller/imu_topic", imu_topic_name))
   {
@@ -45,6 +47,17 @@ FoilboatController::FoilboatController(ros::NodeHandle nh, int rate):
     laser_sub = n.subscribe(laser_topic_name, 1000, &FoilboatController::onLaser, this);
     ROS_INFO("Laser subscriber initialized");
   }
+
+  // Initialize target subscriber
+  if(n.getParam("foilboat_controller/target_topic", target_topic_name))
+  {
+    target_sub = n.subscribe(target_topic_name, 1000, &FoilboatController::onTarget, this);
+  }
+
+  if(n.getParam("foilboat_controller/control_topic", control_topic_name))
+  {
+    control_pub = n.advertise<foilboat_controller::FoilboatControl>(control_topic_name, 100);
+  }
 }
 
 FoilboatController::~FoilboatController()
@@ -53,17 +66,39 @@ FoilboatController::~FoilboatController()
 
 void FoilboatController::control()
 {
-  
+  foilboat_controller::FoilboatControl controlOut;
+  // Rotation matrix math is stinky
+  tf2::Matrix3x3 quaternion_rotation_matrix(lastOrientation);
+  float last_roll, last_pitch, last_yaw;
+  quaternion_rotation_matrix.getRPY(last_roll, last_pitch, last_yaw)
+
+  float roll_error = lastTarget->rollTarget - last_roll;
+  rollControl = roll_controller.update(roll_error, lastTarget->rollTarget, ros::Time::now().toSec());
+  controlOut.rightFoil = 0 + rollControl;
+  controlOut.leftFoil = 0 - rollControl;
+
+  controlOut.elevatorFoil = 0;
+
 }
 
 void FoilboatController::onImu(const sensor_msgs::Imu::ConstPtr& imuPtr)
 {
+  geometry_msgs::Quaternion orientation = imuPtr->orientation;
+  lastOrientation = tf2::Quaternion(orientation.x, orientation.y, orientation.z, orientation.w);
   this->lastIMUMsg = imuPtr;
+  control();
 }
 
 void FoilboatController::onLaser(const sensor_msgs::LaserScan::ConstPtr& laserPtr)
 {
   this->lastLaser = laserPtr;
+  control();
+}
+
+void FoilboatController::onTarget(const foilboat_controller::FoilboatTarget::ConstPtr& targetPtr)
+{
+  this->lastTarget = targetPtr;
+  control();
 }
 
 PIDFF::PIDConfig FoilboatController::convertPIDMapParamToStruct(map<string, float> pidConfigMap)

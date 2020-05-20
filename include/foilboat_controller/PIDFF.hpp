@@ -49,6 +49,8 @@ private:
     // Track last error for derivative term
     double lastError{0.0};
 
+    double lastUpdateTime{0.0};
+
 public:
 
     // Setters and getters
