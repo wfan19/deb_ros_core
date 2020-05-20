@@ -3,6 +3,7 @@ foilboat_controller:
   # TODO: Once robot_localization is implemented, this will just be /odom/filtered
   imu_topic: /plane_ros/imu
   laser_topic: /plane_ros/lidar
+  target_topic: /plane_ros/target
 
   # Publisher topics
   control_topic: /planesim_gazebo/command

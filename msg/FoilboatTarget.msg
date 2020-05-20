@@ -1,0 +1,4 @@
+float64 rollTarget
+float64 pitchTarget
+float64 yawTarget
+float64 altitudeTarget

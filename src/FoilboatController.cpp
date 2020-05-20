@@ -51,14 +51,9 @@ FoilboatController::~FoilboatController()
 {
 }
 
-void FoilboatController::run()
+void FoilboatController::control()
 {
-  while (this->n.ok())
-  {
-    ros::spinOnce();
-    
-    controllerRate.sleep();
-  }
+  
 }
 
 void FoilboatController::onImu(const sensor_msgs::Imu::ConstPtr& imuPtr)

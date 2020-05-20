@@ -7,7 +7,6 @@ int main(int argc, char** argv){
     ros::NodeHandle n;
 
     FoilboatController mFoilboatController(n, 10);
-    mFoilboatController.run();
     
     ros::spin();
     return EXIT_SUCCESS;
