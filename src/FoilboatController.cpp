@@ -19,6 +19,7 @@ FoilboatController::FoilboatController(ros::NodeHandle nh, int rate):
     ROS_INFO("Failed to find param /roll_controller/pidff");
   }
 
+  // Initialize pitch controller PID
   if(n.getParam("foilboat_controller/pitch_controller/pidff", pitch_controller_param_map))
   {
     ROS_INFO("Found pitch_controller pidff config");
@@ -28,6 +29,21 @@ FoilboatController::FoilboatController(ros::NodeHandle nh, int rate):
   else
   {
     ROS_INFO("Failed to find param /pitch_controller/pidff");
+  }
+
+  string imu_topic_name, laser_topic_name;
+  // Initialize IMU subscriber
+  if(n.getParam("foilboat_controller/imu_topic", imu_topic_name))
+  {
+    imu_sub = n.subscribe(imu_topic_name, 1000, &FoilboatController::onImu, this);
+    ROS_INFO("IMU subscriber initialized");
+  }
+
+  // Initialize laser subscriber
+  if(n.getParam("foilboat_controller/laser_topic", laser_topic_name))
+  {
+    laser_sub = n.subscribe(laser_topic_name, 1000, &FoilboatController::onLaser, this);
+    ROS_INFO("Laser subscriber initialized");
   }
 }
 
@@ -45,12 +61,12 @@ void FoilboatController::run()
   }
 }
 
-void FoilboatController::onImu(sensor_msgs::Imu::ConstPtr& imuPtr)
+void FoilboatController::onImu(const sensor_msgs::Imu::ConstPtr& imuPtr)
 {
   this->lastIMUMsg = imuPtr;
 }
 
-void FoilboatController::onLaser(sensor_msgs::LaserScan::ConstPtr& laserPtr)
+void FoilboatController::onLaser(const sensor_msgs::LaserScan::ConstPtr& laserPtr)
 {
   this->lastLaser = laserPtr;
 }

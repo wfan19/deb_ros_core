@@ -20,14 +20,16 @@ public:
   void run();
 
 private:
-  void onImu(sensor_msgs::Imu::ConstPtr& imuPtr);
-  void onLaser(sensor_msgs::LaserScan::ConstPtr& laserPtr);
+  void onImu(const sensor_msgs::Imu::ConstPtr& imuPtr);
+  void onLaser(const sensor_msgs::LaserScan::ConstPtr& laserPtr);
   void control();
 
   PIDFF::PIDConfig convertPIDMapParamToStruct(map<string, float> pidConfigMap);
 
   ros::NodeHandle n;
   ros::Rate controllerRate;
+  ros::Subscriber imu_sub;
+  ros::Subscriber laser_sub;
   sensor_msgs::Imu::ConstPtr lastIMUMsg;
   sensor_msgs::LaserScan::ConstPtr lastLaser;
 
