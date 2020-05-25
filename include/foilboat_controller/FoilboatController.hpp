@@ -10,9 +10,13 @@
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Matrix3x3.h>
 
+#include <dynamic_reconfigure/server.h>
+#include <foilboat_controller/GainsConfig.h>
+
 #include <foilboat_controller/PIDFF.hpp>
 #include <foilboat_controller/FoilboatTarget.h>
 #include <foilboat_controller/FoilboatControl.h>
+#include <foilboat_controller/FoilboatState.h>
 
 using namespace std;
 class FoilboatController
@@ -27,6 +31,8 @@ private:
   void onTarget(const foilboat_controller::FoilboatTarget::ConstPtr& targetPtr);
   void control();
 
+  void onPIDConfig(foilboat_controller::GainsConfig &config, uint32_t level);
+
   PIDFF::PIDConfig convertPIDMapParamToStruct(map<string, float> pidConfigMap);
 
   ros::NodeHandle n;
@@ -38,6 +44,7 @@ private:
 
   ros::Subscriber target_sub;
   ros::Publisher control_pub;
+  ros::Publisher state_pub;
 
   sensor_msgs::Imu::ConstPtr lastIMUMsg{new sensor_msgs::Imu};
   tf2::Quaternion lastOrientation;

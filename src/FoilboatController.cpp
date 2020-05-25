@@ -1,4 +1,5 @@
 #include "geometry_msgs/Quaternion.h"
+#include "std_msgs/Float64.h"
 
 #include <foilboat_controller/FoilboatController.hpp>
 
@@ -59,6 +60,16 @@ FoilboatController::FoilboatController(ros::NodeHandle nh)
     control_pub = n.advertise<foilboat_controller::FoilboatControl>(control_topic_name, 100);
     ROS_INFO("Control publisher initialized");
   }
+
+  state_pub = n.advertise<foilboat_controller::FoilboatState>("/plane_ros/state", 100);
+
+  dynamic_reconfigure::Server<foilboat_controller::GainsConfig> dynamic_reconfigure_server;
+  dynamic_reconfigure::Server<foilboat_controller::GainsConfig>::CallbackType onPIDConfig_callback;
+
+  onPIDConfig_callback = boost::bind(&FoilboatController::onPIDConfig, this, _1, _2);
+  dynamic_reconfigure_server.setCallback(onPIDConfig_callback);
+
+  ros::spin();
 }
 
 FoilboatController::~FoilboatController()
@@ -68,18 +79,31 @@ FoilboatController::~FoilboatController()
 void FoilboatController::control()
 {
   foilboat_controller::FoilboatControl controlOut;
-  // Rotation matrix math is stinky
+
+  // TODO: Rotation matrix math is stinky
   tf2::Matrix3x3 quaternion_rotation_matrix(lastOrientation);
   double last_roll, last_pitch, last_yaw;
   quaternion_rotation_matrix.getRPY(last_roll, last_pitch, last_yaw);
 
-  float roll_error = lastTarget->rollTarget - last_roll;
-  float rollControl = 30 * roll_controller.update(lastTarget->rollTarget, last_roll, ros::Time::now().toSec());
-  ROS_INFO("Roll control: %f, Roll target: %f, Roll error: %f, time: %f", rollControl, lastTarget->rollTarget, roll_error, ros::Time::now().toSec());
-  controlOut.rightFoil = 0 + rollControl * 3.14 / 180;
-  controlOut.leftFoil = 0 - rollControl * 3.14 / 180;
+  foilboat_controller::FoilboatState stateOut;
+  stateOut.roll = last_roll;
+  stateOut.pitch = last_pitch;
+  state_pub.publish(stateOut);
 
-  controlOut.elevatorFoil = 0;
+  float roll_error = lastTarget->rollTarget - last_roll;
+  float rollControl = 30 * roll_controller.update(lastTarget->rollTarget, last_roll, ros::Time::now().toSec()) * 3.14 / 180;
+  ROS_INFO("Roll control: %f, Roll target: %f, Roll current: %f, Roll error: %f", rollControl, lastTarget->rollTarget, last_roll, roll_error);
+  controlOut.rightFoil = rollControl;
+  controlOut.leftFoil = -rollControl;
+
+  float pitch_error = lastTarget->pitchTarget - last_pitch;
+  float pitchControl = -30 * pitch_controller.update(lastTarget->pitchTarget, last_pitch, ros::Time::now().toSec()) * 3.14 / 180;
+  ROS_INFO("Pitch control: %f, Pitch target: %f, Pitch current: %f, Pitch error: %f", pitchControl, lastTarget->pitchTarget, last_pitch, pitch_error);
+  controlOut.elevatorFoil = pitchControl;
+  
+  // controlOut.elevatorFoil = lastTarget->pitchTarget;
+
+
   control_pub.publish(controlOut);
 }
 
@@ -101,6 +125,26 @@ void FoilboatController::onTarget(const foilboat_controller::FoilboatTarget::Con
 {
   this->lastTarget = targetPtr;
   control();
+}
+
+void FoilboatController::onPIDConfig(foilboat_controller::GainsConfig &config, uint32_t level)
+{
+  ROS_INFO("=============== PID Configuration update: ===============");
+  ROS_INFO("Pitch controller config: P: %f, I: %f, D: %f",
+            config.p_pitch,
+            config.i_pitch,
+            config.d_pitch);
+  pitch_controller.setKP(config.p_pitch);
+  pitch_controller.setKI(config.i_pitch);
+  pitch_controller.setKD(config.d_pitch);
+
+  ROS_INFO("Roll controller config: P: %f, I: %f, D: %f",
+            config.p_roll,
+            config.i_roll,
+            config.d_roll);
+  roll_controller.setKP(config.p_roll);
+  roll_controller.setKI(config.i_roll);
+  roll_controller.setKD(config.d_roll);
 }
 
 PIDFF::PIDConfig FoilboatController::convertPIDMapParamToStruct(map<string, float> pidConfigMap)

@@ -10,7 +10,9 @@ project(foilboat_controller)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
+  geometry_msgs
   message_generation
+  dynamic_reconfigure
 )
 
 ## System dependencies are found with CMake's conventions
@@ -51,6 +53,7 @@ add_message_files(
   FILES
   FoilboatTarget.msg
   FoilboatControl.msg
+  FoilboatState.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -71,6 +74,7 @@ add_message_files(
 generate_messages(
   DEPENDENCIES
   std_msgs  # Or other packages containing msgs
+  geometry_msgs
 )
 
 ################################################
@@ -88,10 +92,9 @@ generate_messages(
 ##     and list every .cfg file to be processed
 
 ## Generate dynamic reconfigure parameters in the 'cfg' folder
-# generate_dynamic_reconfigure_options(
-#   cfg/DynReconf1.cfg
-#   cfg/DynReconf2.cfg
-# )
+generate_dynamic_reconfigure_options(
+  dynamic_reconfigure/ControllerGains.cfg
+)
 
 ###################################
 ## catkin specific configuration ##
