@@ -13,10 +13,12 @@
 #include <dynamic_reconfigure/server.h>
 #include <foilboat_controller/GainsConfig.h>
 
-#include <foilboat_controller/PIDFF.hpp>
 #include <foilboat_controller/FoilboatTarget.h>
 #include <foilboat_controller/FoilboatControl.h>
 #include <foilboat_controller/FoilboatState.h>
+
+#include <foilboat_controller/PIDFF.hpp>
+#include <foilboat_controller/PIDWrapper.hpp>
 
 using namespace std;
 class FoilboatController
@@ -36,8 +38,7 @@ private:
   PIDFF::PIDConfig convertPIDMapParamToStruct(map<string, float> pidConfigMap);
 
   ros::NodeHandle n;
-
-  ros::Time lastControlTime;
+  ros::Rate controller_frequency;
 
   ros::Subscriber imu_sub;
   ros::Subscriber laser_sub;
@@ -53,6 +54,8 @@ private:
 
   PIDFF roll_controller;
   PIDFF pitch_controller;
+
+  PIDWrapper controller_pid;
 
 };
 

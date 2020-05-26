@@ -14,7 +14,7 @@ FoilboatController::FoilboatController(ros::NodeHandle nh)
   {
     ROS_INFO("Found roll_controller pidff config");
     PIDFF::PIDConfig roll_controller_config = convertPIDMapParamToStruct(roll_controller_param_map);
-    roll_controller = PIDFF(roll_controller_config, n);
+    controller_pid.updatePID(PIDWrapper::ControllerEnum::roll, roll_controller_config);
   }
   else
   {
@@ -26,7 +26,7 @@ FoilboatController::FoilboatController(ros::NodeHandle nh)
   {
     ROS_INFO("Found pitch_controller pidff config");
     PIDFF::PIDConfig pitch_controller_config = convertPIDMapParamToStruct(pitch_controller_param_map);
-    pitch_controller = PIDFF(pitch_controller_config, n);
+    controller_pid.updatePID(PIDWrapper::ControllerEnum::pitch, pitch_controller_config);
   }
   else
   {
@@ -80,31 +80,26 @@ void FoilboatController::control()
 {
   foilboat_controller::FoilboatControl controlOut;
 
-  // TODO: Rotation matrix math is stinky
-  tf2::Matrix3x3 quaternion_rotation_matrix(lastOrientation);
-  double last_roll, last_pitch, last_yaw;
-  quaternion_rotation_matrix.getRPY(last_roll, last_pitch, last_yaw);
+  while(ros::Ok())
+  {
+    // TODO: Rotation matrix math is stinky
+    tf2::Matrix3x3 quaternion_rotation_matrix(lastOrientation);
+    double last_roll, last_pitch, last_yaw;
+    quaternion_rotation_matrix.getRPY(last_roll, last_pitch, last_yaw);
 
-  foilboat_controller::FoilboatState stateOut;
-  stateOut.roll = last_roll;
-  stateOut.pitch = last_pitch;
-  state_pub.publish(stateOut);
+    foilboat_controller::FoilboatState current_state;
+    current_state.roll = last_roll;
+    current_state.pitch = last_pitch;
 
-  float roll_error = lastTarget->rollTarget - last_roll;
-  float rollControl = 30 * roll_controller.update(lastTarget->rollTarget, last_roll, ros::Time::now().toSec()) * 3.14 / 180;
-  ROS_INFO("Roll control: %f, Roll target: %f, Roll current: %f, Roll error: %f", rollControl, lastTarget->rollTarget, last_roll, roll_error);
-  controlOut.rightFoil = rollControl;
-  controlOut.leftFoil = -rollControl;
+    foilboat_controller::FoilboatState::ConstPtr current_state_ptr(new foilboat_controller::FoilboatState(current_state));
+    
+    controlOut = controller_pid.control(lastTarget, current_state_ptr, ros::Time::now().toSec());
 
-  float pitch_error = lastTarget->pitchTarget - last_pitch;
-  float pitchControl = -30 * pitch_controller.update(lastTarget->pitchTarget, last_pitch, ros::Time::now().toSec()) * 3.14 / 180;
-  ROS_INFO("Pitch control: %f, Pitch target: %f, Pitch current: %f, Pitch error: %f", pitchControl, lastTarget->pitchTarget, last_pitch, pitch_error);
-  controlOut.elevatorFoil = pitchControl;
-  
-  // controlOut.elevatorFoil = lastTarget->pitchTarget;
+    ROS_INFO("Control out: Right foil: %f, Left Foil: %f, Elevator: %f", controlOut.rightFoil, controlOut.leftFoil, controlOut.elevatorFoil);
 
-
-  control_pub.publish(controlOut);
+    state_pub.publish(current_state);
+    control_pub.publish(controlOut);
+  }
 }
 
 void FoilboatController::onImu(const sensor_msgs::Imu::ConstPtr& imuPtr)
@@ -129,22 +124,22 @@ void FoilboatController::onTarget(const foilboat_controller::FoilboatTarget::Con
 
 void FoilboatController::onPIDConfig(foilboat_controller::GainsConfig &config, uint32_t level)
 {
+  controller_pid.resetIntegrators();
+
   ROS_INFO("=============== PID Configuration update: ===============");
   ROS_INFO("Pitch controller config: P: %f, I: %f, D: %f",
             config.p_pitch,
             config.i_pitch,
             config.d_pitch);
-  pitch_controller.setKP(config.p_pitch);
-  pitch_controller.setKI(config.i_pitch);
-  pitch_controller.setKD(config.d_pitch);
+  PIDWrapper::PIDGains pitch_gains(config.p_pitch, config.i_pitch, config.d_pitch);
+  controller_pid.updatePID(PIDWrapper::ControllerEnum::pitch, pitch_gains);
 
   ROS_INFO("Roll controller config: P: %f, I: %f, D: %f",
             config.p_roll,
             config.i_roll,
             config.d_roll);
-  roll_controller.setKP(config.p_roll);
-  roll_controller.setKI(config.i_roll);
-  roll_controller.setKD(config.d_roll);
+  PIDWrapper::PIDGains roll_gains(config.p_roll, config.i_roll, config.d_roll);
+  controller_pid.updatePID(PIDWrapper::ControllerEnum::roll, roll_gains);
 }
 
 PIDFF::PIDConfig FoilboatController::convertPIDMapParamToStruct(map<string, float> pidConfigMap)

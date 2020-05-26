@@ -65,6 +65,7 @@ double PIDFF::update(double target, double current, double currentTime)
     
     // Calculate intergal term
     this->integrator += this->ki * error * dt;
+    ROS_INFO("Intergator = %f + %f * %f * %f", this->integrator, this->ki, error, dt);
     this->integrator = this->integrator > this->imax ? this->imax : this->integrator < this->imin ? this->imin : this->integrator; // anti-windup
 
     // Calculate derivative term
