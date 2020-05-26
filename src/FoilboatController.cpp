@@ -110,58 +110,58 @@ bool FoilboatController::init()
   // Advertise the state publisher
   state_pub = n.advertise<foilboat_controller::FoilboatState>("/plane_ros/state", 100);
 
+  return true;
+}
+
+void FoilboatController::start()
+{
   // Initialize dynamic reconfigure server, and bind onPIDConfig to it as a callback
   dynamic_reconfigure::Server<foilboat_controller::GainsConfig> dynamic_reconfigure_server;
   dynamic_reconfigure::Server<foilboat_controller::GainsConfig>::CallbackType onPIDConfig_callback;
   onPIDConfig_callback = boost::bind(&FoilboatController::onPIDConfig, this, _1, _2);
   dynamic_reconfigure_server.setCallback(onPIDConfig_callback);
-
-  return true;
+  
+  ros::Timer control_timer = n.createTimer(controller_frequency, &FoilboatController::control, this);
+  ros::spin();
 }
 
-void FoilboatController::control()
+void FoilboatController::control(const ros::TimerEvent &event)
 {
   foilboat_controller::FoilboatControl controlOut;
 
   // Run control loop
-  while(ros::ok())
-  {
-    ros::spinOnce();
     // TODO: Rotation matrix math is stinky
-    tf2::Matrix3x3 quaternion_rotation_matrix(lastOrientation);
-    double last_roll, last_pitch, last_yaw;
-    quaternion_rotation_matrix.getRPY(last_roll, last_pitch, last_yaw);
+  tf2::Matrix3x3 quaternion_rotation_matrix(lastOrientation);
+  double last_roll, last_pitch, last_yaw;
+  quaternion_rotation_matrix.getRPY(last_roll, last_pitch, last_yaw);
 
-    // Only run control loop if we have valid a target and pose estimate
-    if(
-      !isnan(last_roll) &&
-      !isnan(last_pitch) &&
-      !isnan(last_yaw) &&
-      !isnan(lastTarget->pitchTarget) &&
-      !isnan(lastTarget->rollTarget)
-    )
-    {
-      foilboat_controller::FoilboatState current_state;
-      current_state.roll = last_roll;
-      current_state.pitch = last_pitch;
+  // Only run control loop if we have valid a target and pose estimate
+  if(
+    !isnan(last_roll) &&
+    !isnan(last_pitch) &&
+    !isnan(last_yaw) &&
+    !isnan(lastTarget->pitchTarget) &&
+    !isnan(lastTarget->rollTarget)
+  )
+  {
+    foilboat_controller::FoilboatState current_state;
+    current_state.roll = last_roll;
+    current_state.pitch = last_pitch;
 
-      foilboat_controller::FoilboatState::ConstPtr current_state_ptr(new foilboat_controller::FoilboatState(current_state));
-      
-      controlOut = controller_pid.control(lastTarget, current_state_ptr, ros::Time::now().toSec());
+    foilboat_controller::FoilboatState::ConstPtr current_state_ptr(new foilboat_controller::FoilboatState(current_state));
+    
+    controlOut = controller_pid.control(lastTarget, current_state_ptr, ros::Time::now().toSec());
 
-      ROS_INFO("Control out: Right foil: %f, Left Foil: %f, Elevator: %f", controlOut.rightFoil, controlOut.leftFoil, controlOut.elevatorFoil);
+    ROS_INFO("Control out: Right foil: %f, Left Foil: %f, Elevator: %f", controlOut.rightFoil, controlOut.leftFoil, controlOut.elevatorFoil);
 
-      state_pub.publish(current_state);
-      control_pub.publish(controlOut);
-
-      controller_frequency.sleep();
-    }
-    else
-    {
-      // ROS_INFO("Either your roll, pitch, yaw, pitchTarget, or rollTarget are NaN");
-      ROS_INFO("Roll: %f, Pitch: %f, Yaw: %f, pitchTarget: %f, rollTarget: %f",
-        last_roll, last_pitch, last_yaw, lastTarget->pitchTarget, lastTarget->rollTarget);
-    }
+    state_pub.publish(current_state);
+    control_pub.publish(controlOut);
+  }
+  else
+  {
+    // ROS_INFO("Either your roll, pitch, yaw, pitchTarget, or rollTarget are NaN");
+    ROS_INFO("Roll: %f, Pitch: %f, Yaw: %f, pitchTarget: %f, rollTarget: %f",
+      last_roll, last_pitch, last_yaw, lastTarget->pitchTarget, lastTarget->rollTarget);
   }
 }
 

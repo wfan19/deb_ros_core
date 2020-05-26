@@ -10,7 +10,7 @@ int main(int argc, char** argv){
   bool init_status = mFoilboatController.init();
   if(init_status)
   {
-    mFoilboatController.control();
+    mFoilboatController.start();
   }
   return EXIT_SUCCESS;
 }

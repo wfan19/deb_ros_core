@@ -28,7 +28,8 @@ public:
   ~FoilboatController();
 
   bool init();
-  void control();
+  void start();
+  void control(const ros::TimerEvent &event);
 
 private:
   void onImu(const sensor_msgs::Imu::ConstPtr& imuPtr);
