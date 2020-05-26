@@ -55,9 +55,6 @@ private:
   sensor_msgs::LaserScan::ConstPtr lastLaser{new sensor_msgs::LaserScan};
   foilboat_controller::FoilboatTarget::ConstPtr lastTarget{new foilboat_controller::FoilboatTarget};
 
-  PIDFF roll_controller;
-  PIDFF pitch_controller;
-
   PIDWrapper controller_pid;
 
 };

@@ -1,4 +1,4 @@
-#include <cmath> // Needed for isnan()
+#include <cmath> // Needed for isnan() and cos()
 
 #include "geometry_msgs/Quaternion.h"
 #include "std_msgs/Float64.h"
@@ -21,7 +21,7 @@ bool FoilboatController::init()
   // TODO: Rewrite all this initialization garbage
   // Something like initParams(string paramName, function callback){}
  
-  map<std::string, float> roll_controller_param_map, pitch_controller_param_map;
+  map<std::string, float> roll_controller_param_map, pitch_controller_param_map, altitude_controller_param_map;
   if(n.getParam("foilboat_controller/roll_controller/pidff", roll_controller_param_map))
   {
     ROS_INFO("Found roll_controller pidff config");
@@ -44,6 +44,19 @@ bool FoilboatController::init()
   else
   {
     ROS_ERROR("Failed to find param /pitch_controller/pidff");
+    return false;
+  }
+
+  // Initialize altitude controller PID
+  if(n.getParam("foilboat_controller/altitude_controller/pidff", altitude_controller_param_map))
+  {
+    ROS_INFO("Found altitude_controller pidff config");
+    PIDFF::PIDConfig altitude_controller_config = convertPIDMapParamToStruct(altitude_controller_param_map);
+    controller_pid.updatePID(PIDWrapper::ControllerEnum::altitude, altitude_controller_config);
+  }
+  else
+  {
+    ROS_ERROR("Failed to find param /foilboat_controller/altitude_cnontroller/pidff");
     return false;
   }
 
@@ -147,6 +160,10 @@ void FoilboatController::control(const ros::TimerEvent &event)
     foilboat_controller::FoilboatState current_state;
     current_state.roll = last_roll;
     current_state.pitch = last_pitch;
+    if(lastLaser->ranges[0] < 35 && lastLaser->ranges[0] > 0)
+    {
+      current_state.altitude = lastLaser->ranges[0] * cos(last_pitch) * cos(last_roll);
+    }
 
     foilboat_controller::FoilboatState::ConstPtr current_state_ptr(new foilboat_controller::FoilboatState(current_state));
     
