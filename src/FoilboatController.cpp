@@ -1,15 +1,27 @@
+#include <cmath> // Needed for isnan()
+
 #include "geometry_msgs/Quaternion.h"
 #include "std_msgs/Float64.h"
 
 #include <foilboat_controller/FoilboatController.hpp>
 
 using namespace std;
-FoilboatController::FoilboatController(ros::NodeHandle nh)
+FoilboatController::FoilboatController(ros::NodeHandle nh):
+  controller_frequency{1}
 {
   this->n = nh;
+}
 
+FoilboatController::~FoilboatController()
+{
+}
+
+bool FoilboatController::init()
+{
+  // TODO: Rewrite all this initialization garbage
+  // Something like initParams(string paramName, function callback){}
+ 
   map<std::string, float> roll_controller_param_map, pitch_controller_param_map;
-  
   if(n.getParam("foilboat_controller/roll_controller/pidff", roll_controller_param_map))
   {
     ROS_INFO("Found roll_controller pidff config");
@@ -18,7 +30,8 @@ FoilboatController::FoilboatController(ros::NodeHandle nh)
   }
   else
   {
-    ROS_INFO("Failed to find param /roll_controller/pidff");
+    ROS_ERROR("Failed to find param /roll_controller/pidff");
+    return false;
   }
 
   // Initialize pitch controller PID
@@ -30,7 +43,8 @@ FoilboatController::FoilboatController(ros::NodeHandle nh)
   }
   else
   {
-    ROS_INFO("Failed to find param /pitch_controller/pidff");
+    ROS_ERROR("Failed to find param /pitch_controller/pidff");
+    return false;
   }
 
   string imu_topic_name, laser_topic_name, target_topic_name, control_topic_name;
@@ -40,12 +54,22 @@ FoilboatController::FoilboatController(ros::NodeHandle nh)
     imu_sub = n.subscribe(imu_topic_name, 1000, &FoilboatController::onImu, this);
     ROS_INFO("IMU subscriber initialized");
   }
+  else
+  {
+    ROS_ERROR("Failed to find param /foilboat_controller/imu_topic");
+    return false;
+  }
 
   // Initialize laser subscriber
   if(n.getParam("foilboat_controller/laser_topic", laser_topic_name))
   {
     laser_sub = n.subscribe(laser_topic_name, 1000, &FoilboatController::onLaser, this);
     ROS_INFO("Laser subscriber initialized");
+  }
+  else
+  {
+    ROS_ERROR("Failed to find param /foilboat_controller/laser_topic");
+    return false;
   }
 
   // Initialize target subscriber
@@ -54,74 +78,116 @@ FoilboatController::FoilboatController(ros::NodeHandle nh)
     target_sub = n.subscribe(target_topic_name, 1000, &FoilboatController::onTarget, this);
     ROS_INFO("Target subscriber initialized");
   }
+  else
+  {
+    ROS_ERROR("Failed to find param /foilboat_controller/target_topic");
+    return false;
+  }
 
   if(n.getParam("foilboat_controller/control_topic", control_topic_name))
   {
     control_pub = n.advertise<foilboat_controller::FoilboatControl>(control_topic_name, 100);
     ROS_INFO("Control publisher initialized");
   }
+  else
+  {
+    ROS_ERROR("Failed to find param /foilboat_controller/control_topic");
+    return false;
+  }
 
+  int frequency;
+  if(n.getParam("foilboat_controller/controller_frequency", frequency))
+  {
+    controller_frequency = ros::Rate(frequency);
+    ROS_INFO("Controller frequency initialized");
+  }
+  else
+  {
+    ROS_ERROR("Failed to find param /foilboat_controller/controller_frequency");
+    return false;
+  }
+  
+  // Advertise the state publisher
   state_pub = n.advertise<foilboat_controller::FoilboatState>("/plane_ros/state", 100);
 
+  // Initialize dynamic reconfigure server, and bind onPIDConfig to it as a callback
   dynamic_reconfigure::Server<foilboat_controller::GainsConfig> dynamic_reconfigure_server;
   dynamic_reconfigure::Server<foilboat_controller::GainsConfig>::CallbackType onPIDConfig_callback;
-
   onPIDConfig_callback = boost::bind(&FoilboatController::onPIDConfig, this, _1, _2);
   dynamic_reconfigure_server.setCallback(onPIDConfig_callback);
 
-  ros::spin();
-}
-
-FoilboatController::~FoilboatController()
-{
+  return true;
 }
 
 void FoilboatController::control()
 {
   foilboat_controller::FoilboatControl controlOut;
 
-  while(ros::Ok())
+  // Run control loop
+  while(ros::ok())
   {
+    ros::spinOnce();
     // TODO: Rotation matrix math is stinky
     tf2::Matrix3x3 quaternion_rotation_matrix(lastOrientation);
     double last_roll, last_pitch, last_yaw;
     quaternion_rotation_matrix.getRPY(last_roll, last_pitch, last_yaw);
 
-    foilboat_controller::FoilboatState current_state;
-    current_state.roll = last_roll;
-    current_state.pitch = last_pitch;
+    // Only run control loop if we have valid a target and pose estimate
+    if(
+      !isnan(last_roll) &&
+      !isnan(last_pitch) &&
+      !isnan(last_yaw) &&
+      !isnan(lastTarget->pitchTarget) &&
+      !isnan(lastTarget->rollTarget)
+    )
+    {
+      foilboat_controller::FoilboatState current_state;
+      current_state.roll = last_roll;
+      current_state.pitch = last_pitch;
 
-    foilboat_controller::FoilboatState::ConstPtr current_state_ptr(new foilboat_controller::FoilboatState(current_state));
-    
-    controlOut = controller_pid.control(lastTarget, current_state_ptr, ros::Time::now().toSec());
+      foilboat_controller::FoilboatState::ConstPtr current_state_ptr(new foilboat_controller::FoilboatState(current_state));
+      
+      controlOut = controller_pid.control(lastTarget, current_state_ptr, ros::Time::now().toSec());
 
-    ROS_INFO("Control out: Right foil: %f, Left Foil: %f, Elevator: %f", controlOut.rightFoil, controlOut.leftFoil, controlOut.elevatorFoil);
+      ROS_INFO("Control out: Right foil: %f, Left Foil: %f, Elevator: %f", controlOut.rightFoil, controlOut.leftFoil, controlOut.elevatorFoil);
 
-    state_pub.publish(current_state);
-    control_pub.publish(controlOut);
+      state_pub.publish(current_state);
+      control_pub.publish(controlOut);
+
+      controller_frequency.sleep();
+    }
+    else
+    {
+      // ROS_INFO("Either your roll, pitch, yaw, pitchTarget, or rollTarget are NaN");
+      ROS_INFO("Roll: %f, Pitch: %f, Yaw: %f, pitchTarget: %f, rollTarget: %f",
+        last_roll, last_pitch, last_yaw, lastTarget->pitchTarget, lastTarget->rollTarget);
+    }
   }
 }
 
+// IMU topic subcriber callback
 void FoilboatController::onImu(const sensor_msgs::Imu::ConstPtr& imuPtr)
 {
+  ROS_INFO("onIMU");
   geometry_msgs::Quaternion orientation = imuPtr->orientation;
   lastOrientation = tf2::Quaternion(orientation.x, orientation.y, orientation.z, orientation.w);
   this->lastIMUMsg = imuPtr;
-  control();
 }
 
+// Laser sensor topic subscriber callback
 void FoilboatController::onLaser(const sensor_msgs::LaserScan::ConstPtr& laserPtr)
 {
   this->lastLaser = laserPtr;
-  control();
 }
 
+
+// Plane pose/altitude target topic subscriber callback
 void FoilboatController::onTarget(const foilboat_controller::FoilboatTarget::ConstPtr& targetPtr)
 {
   this->lastTarget = targetPtr;
-  control();
 }
 
+// Dynamic reconfigure callback
 void FoilboatController::onPIDConfig(foilboat_controller::GainsConfig &config, uint32_t level)
 {
   controller_pid.resetIntegrators();
@@ -142,6 +208,8 @@ void FoilboatController::onPIDConfig(foilboat_controller::GainsConfig &config, u
   controller_pid.updatePID(PIDWrapper::ControllerEnum::roll, roll_gains);
 }
 
+// Convert an array of PIDFF controller parameters
+// into a PIDFF::PIDConfig configuration struct
 PIDFF::PIDConfig FoilboatController::convertPIDMapParamToStruct(map<string, float> pidConfigMap)
 {
   map<string, float>::iterator configIterator;

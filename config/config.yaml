@@ -8,6 +8,8 @@ foilboat_controller:
   # Publisher topics
   control_topic: /planesim_gazebo/control
 
+  controller_frequency: 10
+
   # Parameters for the roll controller
   roll_controller:
     pidff: {p: 0.5, i: 0.01, d: 0, ff: 0, i_min: -0.005, i_max: 0.005, min: -1, max: 1}

@@ -27,11 +27,13 @@ public:
   FoilboatController(ros::NodeHandle nh);
   ~FoilboatController();
 
+  bool init();
+  void control();
+
 private:
   void onImu(const sensor_msgs::Imu::ConstPtr& imuPtr);
   void onLaser(const sensor_msgs::LaserScan::ConstPtr& laserPtr);
   void onTarget(const foilboat_controller::FoilboatTarget::ConstPtr& targetPtr);
-  void control();
 
   void onPIDConfig(foilboat_controller::GainsConfig &config, uint32_t level);
 
