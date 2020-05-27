@@ -68,8 +68,12 @@ foilboat_controller::FoilboatControl PIDWrapper::control(
 {
   foilboat_controller::FoilboatControl control_out;
   ROS_INFO("========== Control loop ==========");
-  float pitch_control = -pitch_controller.update(target->pitchTarget, state->pitch, time) * 30 * 3.14 / 180;
-  ROS_INFO("Pitch control: %f, Pitch target: %f, Pitch state: %f, time: %f", pitch_control, target->pitchTarget, state->pitch, time);
+
+  float target_pitch = -altitude_controller.update(target->altitudeTarget, state->altitude, time);
+  ROS_INFO("Target pitch: %f, Altitude target: %f, Altitude state: %f", target_pitch, target->altitudeTarget, state->altitude);
+
+  float pitch_control = -pitch_controller.update(target_pitch, state->pitch, time) * 30 * 3.14 / 180;
+  ROS_INFO("Pitch control: %f, Pitch target: %f, Pitch state: %f, time: %f", pitch_control, target_pitch, state->pitch, time);
 
   float roll_control = roll_controller.update(target->rollTarget, state->roll, time) * 30 * 3.14 / 180;
   ROS_INFO("Roll control: %f, Roll target: %f, Roll state: %f, time: %f", roll_control, target->rollTarget, state->roll, time);

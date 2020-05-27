@@ -210,6 +210,14 @@ void FoilboatController::onPIDConfig(foilboat_controller::GainsConfig &config, u
   controller_pid.resetIntegrators();
 
   ROS_INFO("=============== PID Configuration update: ===============");
+
+  ROS_INFO("Altitude controller config: P: %f, I: %f, D: %f",
+            config.p_altitude,
+            config.i_altitude,
+            config.d_altitude);
+  PIDWrapper::PIDGains altitude_gains(config.p_altitude, config.i_altitude, config.d_altitude);
+  controller_pid.updatePID(PIDWrapper::ControllerEnum::altitude, altitude_gains);
+
   ROS_INFO("Pitch controller config: P: %f, I: %f, D: %f",
             config.p_pitch,
             config.i_pitch,
