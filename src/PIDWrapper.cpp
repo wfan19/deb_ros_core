@@ -71,8 +71,10 @@ foilboat_controller::FoilboatControl PIDWrapper::control(
   float flap_control = 0;
   if(target->altitudeTarget > 0)
   {
-    flap_control = -altitude_controller.update(target->altitudeTarget, state->altitude, time);
-    ROS_INFO("Target flaps: %f, Altitude target: %f, Altitude state: %f", flap_control, target->altitudeTarget, state->altitude);
+    float altitude_rate_target = altitude_controller.update(target->altitudeTarget, state->altitude, time);
+    ROS_INFO("Altitude rate target: %f, Altitude target: %f, Altitude state: %f", altitude_rate_target, target->altitudeTarget, state->altitude);
+    flap_control = -altitude_rate_controller.update(altitude_rate_target, state->altitudeRate, time);
+    ROS_INFO("Target flaps: %f, Altitude rate target: %f, Altitude rate state: %f", flap_control, altitude_rate_target, state->altitudeRate);
   }
 
   // Manual elevator control:
@@ -84,7 +86,6 @@ foilboat_controller::FoilboatControl PIDWrapper::control(
 
   float roll_control = roll_controller.update(target->rollTarget, state->roll, time) * 30 * 3.14 / 180;
   ROS_INFO("Roll control: %f, Roll target: %f, Roll state: %f, time: %f", roll_control, target->rollTarget, state->roll, time);
-
   control_out.rightFoil = roll_control + flap_control;
   control_out.leftFoil = -roll_control + flap_control;
   control_out.elevatorFoil = elevator_control;

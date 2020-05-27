@@ -23,6 +23,9 @@ private:
 
   ros::NodeHandle n;
   ros::Publisher pose_pub;
+  ros::Subscriber state_sub;
+  ros::Subscriber laser_sub;
+
   foilboat_controller::FoilboatState::ConstPtr last_state{new foilboat_controller::FoilboatState};
 };
 

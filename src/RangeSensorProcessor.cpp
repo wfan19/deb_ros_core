@@ -4,10 +4,11 @@ RangeSensorProcessor::RangeSensorProcessor(ros::NodeHandle nh)
 {
   this->n = nh;
 
-  pose_pub = n.advertise<geometry_msgs::PoseWithCovarianceStamped>("z_estimate", 100);
+  pose_pub = n.advertise<geometry_msgs::PoseWithCovarianceStamped>("/plane_ros/z_estimate", 100);
   
-  ros::Subscriber state_sub = n.subscribe("/plane_ros/state", 100, &RangeSensorProcessor::onState, this);
-  ros::Subscriber laser_sub = n.subscribe("/plane_ros/laser", 100, &RangeSensorProcessor::onLaser, this);
+  ROS_INFO("Initializing subscribers");
+  state_sub = n.subscribe("/plane_ros/state", 1000, &RangeSensorProcessor::onState, this);
+  laser_sub = n.subscribe("/plane_ros/lidar", 1000, &RangeSensorProcessor::onLaser, this);
 }
 
 RangeSensorProcessor::~RangeSensorProcessor()
@@ -16,6 +17,7 @@ RangeSensorProcessor::~RangeSensorProcessor()
 
 void RangeSensorProcessor::run()
 {
+  ROS_INFO("Spinning node");
   ros::spin();
 }
 
@@ -26,6 +28,7 @@ void RangeSensorProcessor::onState(const foilboat_controller::FoilboatState::Con
 
 void RangeSensorProcessor::onLaser(const sensor_msgs::LaserScan::ConstPtr laserPtr)
 {
+  ROS_INFO("onLaser");
   boost::array<float, 36> covariance;
   geometry_msgs::PoseWithCovarianceStamped pose_with_covariance_stamped_out;
 

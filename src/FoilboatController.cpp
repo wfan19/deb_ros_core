@@ -140,10 +140,8 @@ void FoilboatController::start()
 
 void FoilboatController::control(const ros::TimerEvent &event)
 {
-  foilboat_controller::FoilboatControl controlOut;
-
   // Run control loop
-    // TODO: Rotation matrix math is stinky
+  foilboat_controller::FoilboatControl controlOut;
 
   // Only run control loop if we have valid a target and pose estimate
   if(
@@ -196,8 +194,14 @@ void FoilboatController::onLaser(const sensor_msgs::LaserScan::ConstPtr& laserPt
   if(lastLaser->ranges[0] < 35 && lastLaser->ranges[0] > 0)
   {
     float z_estimate = lastLaser->ranges[0] * cos(last_state.pitch) * cos(last_state.roll);
-    last_state.altitudeRate = (last_state.altitude - z_estimate) - (last_laser_time.toSec() - ros::Time::now().toSec());
+    ROS_INFO("altitudeRate = (%f - %f) / (%f - %f)",
+      z_estimate,
+      last_state.altitude,
+      ros::Time::now().toSec(),
+      last_laser_time.toSec());
+    last_state.altitudeRate = (z_estimate - last_state.altitude) - (ros::Time::now().toSec() - last_laser_time.toSec());
     last_state.altitude = z_estimate;
+    last_laser_time = ros::Time::now();
   }
 }
 
