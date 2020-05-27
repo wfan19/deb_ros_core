@@ -2,7 +2,8 @@
 
 #include <foilboat_controller/FoilboatController.hpp>
 
-int main(int argc, char** argv){
+int main(int argc, char** argv)
+{
   ros::init(argc, argv, "foilboat_controller_node");
   ros::NodeHandle n;
 

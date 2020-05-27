@@ -34,6 +34,7 @@ public:
   
   enum ControllerEnum
   {
+    altitude_rate,
     altitude,
     pitch,
     roll,
@@ -56,7 +57,7 @@ private:
   ros::NodeHandle n;
 
   PIDFF altitude_controller;
-  PIDFF pitch_controller;
+  PIDFF altitude_rate_controller;
   PIDFF roll_controller;
 };
 

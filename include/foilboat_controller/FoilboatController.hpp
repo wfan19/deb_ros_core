@@ -50,8 +50,11 @@ private:
   ros::Publisher control_pub;
   ros::Publisher state_pub;
 
-  sensor_msgs::Imu::ConstPtr lastIMUMsg{new sensor_msgs::Imu};
   tf2::Quaternion lastOrientation;
+  foilboat_controller::FoilboatState last_state;
+  ros::Time last_laser_time;
+
+  sensor_msgs::Imu::ConstPtr lastIMUMsg{new sensor_msgs::Imu};
   sensor_msgs::LaserScan::ConstPtr lastLaser{new sensor_msgs::LaserScan};
   foilboat_controller::FoilboatTarget::ConstPtr lastTarget{new foilboat_controller::FoilboatTarget};
 

@@ -2,6 +2,8 @@
 
   <rosparam file="$(find foilboat_controller)/config/config.yaml" command="load" />
 
+  <!-- <node pkg="foilboat_controller" -->
+
   <node pkg="foilboat_controller" type="controller_node" name="foilboat_controller_node" output="screen"/>
   
 </launch>

@@ -4,7 +4,7 @@ PIDWrapper::PIDWrapper()
 {
   // this->n = nh;
   altitude_controller = PIDFF();
-  pitch_controller = PIDFF();
+  altitude_rate_controller = PIDFF();
   roll_controller = PIDFF();
 }
 
@@ -22,11 +22,11 @@ void PIDWrapper::updatePID(ControllerEnum controller, PIDGains gains)
       altitude_controller.setKI(gains.ki);
       altitude_controller.setKI(gains.ki);
       break;
-    case pitch:
-      ROS_INFO("Setting pitch PID");
-      pitch_controller.setKP(gains.kp);
-      pitch_controller.setKI(gains.ki);
-      pitch_controller.setKI(gains.ki);
+    case altitude_rate:
+      ROS_INFO("Setting altitude rate PID");
+      altitude_rate_controller.setKP(gains.kp);
+      altitude_rate_controller.setKI(gains.ki);
+      altitude_rate_controller.setKI(gains.ki);
       break;
     case roll:
       ROS_INFO("Setting roll PID");
@@ -44,8 +44,8 @@ void PIDWrapper::updatePID(ControllerEnum controller, PIDFF::PIDConfig config)
     case altitude:
       altitude_controller.init(config);
       break;
-    case pitch:
-      pitch_controller.init(config);
+    case altitude_rate:
+      altitude_rate_controller.init(config);
       break;
     case roll:
       roll_controller.init(config);
@@ -56,7 +56,7 @@ void PIDWrapper::updatePID(ControllerEnum controller, PIDFF::PIDConfig config)
 void PIDWrapper::resetIntegrators()
 {
   altitude_controller.resetIntegrator();
-  pitch_controller.resetIntegrator();
+  altitude_rate_controller.resetIntegrator();
   roll_controller.resetIntegrator();
 }
 
@@ -68,19 +68,26 @@ foilboat_controller::FoilboatControl PIDWrapper::control(
 {
   foilboat_controller::FoilboatControl control_out;
   ROS_INFO("========== Control loop ==========");
+  float flap_control = 0;
+  if(target->altitudeTarget > 0)
+  {
+    flap_control = -altitude_controller.update(target->altitudeTarget, state->altitude, time);
+    ROS_INFO("Target flaps: %f, Altitude target: %f, Altitude state: %f", flap_control, target->altitudeTarget, state->altitude);
+  }
 
-  float target_pitch = -altitude_controller.update(target->altitudeTarget, state->altitude, time);
-  ROS_INFO("Target pitch: %f, Altitude target: %f, Altitude state: %f", target_pitch, target->altitudeTarget, state->altitude);
+  // Manual elevator control:
+  float elevator_control = target->elevatorTarget;
 
-  float pitch_control = -pitch_controller.update(target_pitch, state->pitch, time) * 30 * 3.14 / 180;
-  ROS_INFO("Pitch control: %f, Pitch target: %f, Pitch state: %f, time: %f", pitch_control, target_pitch, state->pitch, time);
+  // Pitch angle control:
+  // float pitch_control = -pitch_controller.update(target_pitch, state->pitch, time) * 30 * 3.14 / 180;
+  // ROS_INFO("Pitch control: %f, Pitch target: %f, Pitch state: %f, time: %f", pitch_control, target_pitch, state->pitch, time);
 
   float roll_control = roll_controller.update(target->rollTarget, state->roll, time) * 30 * 3.14 / 180;
   ROS_INFO("Roll control: %f, Roll target: %f, Roll state: %f, time: %f", roll_control, target->rollTarget, state->roll, time);
 
-  control_out.rightFoil = roll_control;
-  control_out.leftFoil = -roll_control;
-  control_out.elevatorFoil = pitch_control;
+  control_out.rightFoil = roll_control + flap_control;
+  control_out.leftFoil = -roll_control + flap_control;
+  control_out.elevatorFoil = elevator_control;
 
   return control_out;
 }

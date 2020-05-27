@@ -21,7 +21,7 @@ bool FoilboatController::init()
   // TODO: Rewrite all this initialization garbage
   // Something like initParams(string paramName, function callback){}
  
-  map<std::string, float> roll_controller_param_map, pitch_controller_param_map, altitude_controller_param_map;
+  map<std::string, float> roll_controller_param_map, altitude_rate_controller_param_map, altitude_controller_param_map;
   if(n.getParam("foilboat_controller/roll_controller/pidff", roll_controller_param_map))
   {
     ROS_INFO("Found roll_controller pidff config");
@@ -35,15 +35,15 @@ bool FoilboatController::init()
   }
 
   // Initialize pitch controller PID
-  if(n.getParam("foilboat_controller/pitch_controller/pidff", pitch_controller_param_map))
+  if(n.getParam("foilboat_controller/altitude_rate_controller/pidff", altitude_rate_controller_param_map))
   {
-    ROS_INFO("Found pitch_controller pidff config");
-    PIDFF::PIDConfig pitch_controller_config = convertPIDMapParamToStruct(pitch_controller_param_map);
-    controller_pid.updatePID(PIDWrapper::ControllerEnum::pitch, pitch_controller_config);
+    ROS_INFO("Found altitude_rate pidff config");
+    PIDFF::PIDConfig altitude_rate_controller_config = convertPIDMapParamToStruct(altitude_rate_controller_param_map);
+    controller_pid.updatePID(PIDWrapper::ControllerEnum::altitude_rate, altitude_rate_controller_config);
   }
   else
   {
-    ROS_ERROR("Failed to find param /pitch_controller/pidff");
+    ROS_ERROR("Failed to find param /altitude_rate_controller/pidff");
     return false;
   }
 
@@ -144,41 +144,30 @@ void FoilboatController::control(const ros::TimerEvent &event)
 
   // Run control loop
     // TODO: Rotation matrix math is stinky
-  tf2::Matrix3x3 quaternion_rotation_matrix(lastOrientation);
-  double last_roll, last_pitch, last_yaw;
-  quaternion_rotation_matrix.getRPY(last_roll, last_pitch, last_yaw);
 
   // Only run control loop if we have valid a target and pose estimate
   if(
-    !isnan(last_roll) &&
-    !isnan(last_pitch) &&
-    !isnan(last_yaw) &&
-    !isnan(lastTarget->pitchTarget) &&
+    !isnan(last_state.pitch) &&
+    !isnan(last_state.roll) &&
+    !isnan(last_state.yaw) &&
+    !isnan(lastTarget->altitudeTarget) &&
     !isnan(lastTarget->rollTarget)
   )
   {
-    foilboat_controller::FoilboatState current_state;
-    current_state.roll = last_roll;
-    current_state.pitch = last_pitch;
-    if(lastLaser->ranges[0] < 35 && lastLaser->ranges[0] > 0)
-    {
-      current_state.altitude = lastLaser->ranges[0] * cos(last_pitch) * cos(last_roll);
-    }
-
-    foilboat_controller::FoilboatState::ConstPtr current_state_ptr(new foilboat_controller::FoilboatState(current_state));
+    foilboat_controller::FoilboatState::ConstPtr current_state_ptr(new foilboat_controller::FoilboatState(last_state));
     
     controlOut = controller_pid.control(lastTarget, current_state_ptr, ros::Time::now().toSec());
 
     ROS_INFO("Control out: Right foil: %f, Left Foil: %f, Elevator: %f", controlOut.rightFoil, controlOut.leftFoil, controlOut.elevatorFoil);
 
-    state_pub.publish(current_state);
+    state_pub.publish(last_state);
     control_pub.publish(controlOut);
   }
   else
   {
     // ROS_INFO("Either your roll, pitch, yaw, pitchTarget, or rollTarget are NaN");
     ROS_INFO("Roll: %f, Pitch: %f, Yaw: %f, pitchTarget: %f, rollTarget: %f",
-      last_roll, last_pitch, last_yaw, lastTarget->pitchTarget, lastTarget->rollTarget);
+      last_state.roll, last_state.pitch, last_state.yaw, lastTarget->altitudeTarget, lastTarget->rollTarget);
   }
 }
 
@@ -189,12 +178,27 @@ void FoilboatController::onImu(const sensor_msgs::Imu::ConstPtr& imuPtr)
   geometry_msgs::Quaternion orientation = imuPtr->orientation;
   lastOrientation = tf2::Quaternion(orientation.x, orientation.y, orientation.z, orientation.w);
   this->lastIMUMsg = imuPtr;
+
+  tf2::Matrix3x3 quaternion_rotation_matrix(lastOrientation);
+  double last_roll, last_pitch, last_yaw;
+  quaternion_rotation_matrix.getRPY(last_roll, last_pitch, last_yaw);
+
+  last_state.pitch = last_pitch;
+  last_state.roll = last_roll;
+  last_state.yaw = last_yaw;
 }
 
 // Laser sensor topic subscriber callback
 void FoilboatController::onLaser(const sensor_msgs::LaserScan::ConstPtr& laserPtr)
 {
   this->lastLaser = laserPtr;
+
+  if(lastLaser->ranges[0] < 35 && lastLaser->ranges[0] > 0)
+  {
+    float z_estimate = lastLaser->ranges[0] * cos(last_state.pitch) * cos(last_state.roll);
+    last_state.altitudeRate = (last_state.altitude - z_estimate) - (last_laser_time.toSec() - ros::Time::now().toSec());
+    last_state.altitude = z_estimate;
+  }
 }
 
 
@@ -218,12 +222,12 @@ void FoilboatController::onPIDConfig(foilboat_controller::GainsConfig &config, u
   PIDWrapper::PIDGains altitude_gains(config.p_altitude, config.i_altitude, config.d_altitude);
   controller_pid.updatePID(PIDWrapper::ControllerEnum::altitude, altitude_gains);
 
-  ROS_INFO("Pitch controller config: P: %f, I: %f, D: %f",
-            config.p_pitch,
-            config.i_pitch,
-            config.d_pitch);
-  PIDWrapper::PIDGains pitch_gains(config.p_pitch, config.i_pitch, config.d_pitch);
-  controller_pid.updatePID(PIDWrapper::ControllerEnum::pitch, pitch_gains);
+  ROS_INFO("Altitude rate controller config: P: %f, I: %f, D: %f",
+            config.p_altitude_rate,
+            config.i_altitude_rate,
+            config.d_altitude_rate);
+  PIDWrapper::PIDGains altitude_rate_gains(config.p_altitude_rate, config.i_altitude_rate, config.d_altitude_rate);
+  controller_pid.updatePID(PIDWrapper::ControllerEnum::altitude_rate, altitude_rate_gains);
 
   ROS_INFO("Roll controller config: P: %f, I: %f, D: %f",
             config.p_roll,

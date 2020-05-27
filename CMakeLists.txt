@@ -172,6 +172,15 @@ target_link_libraries(controller_node
   FoilboatController
 )
 
+add_library(RangeSensorProcessor src/RangeSensorProcessor.cpp)
+target_link_libraries(RangeSensorProcessor ${catkin_LIBRARIES})
+
+add_executable(range_sensor_wrapper_node src/range_sensor_wrapper_node.cpp)
+target_link_libraries(range_sensor_wrapper_node
+  ${catkin_LIBRARIES}
+  RangeSensorProcessor
+)
+
 #############
 ## Install ##
 #############
