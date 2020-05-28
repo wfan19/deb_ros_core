@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<robot name="foilboat" xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <xacro:include filename="$(find foilboat_description)/urdf/materials.xacro" />
+    <xacro:include filename="$(find foilboat_description)/urdf/foilboat_components.xacro" />
+
+    <xacro:property name="hullLength" value="5.25" />
+    <xacro:property name="hullBeam" value="2.59" />
+
+    <xacro:property name="hullMass" value="130"/>
+    <xacro:property name="hullX_dim" value="${hullLength}"/>
+    <xacro:property name="hullY_dim" value="0.3"/>
+    <xacro:property name="hullZ_dim" value="0.5" />
+    <xacro:property name="hullX_pos" value="0"/>
+    <xacro:property name="hullY_pos" value="${hullBeam}/2"/>
+    <xacro:property name="hullZ_pos" value="0"/>
+
+
+</robot>

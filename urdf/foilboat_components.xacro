@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<robot name="foilboat" xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <xacro name="hull" params="name port">
+        <link name="${name}_hull">
+            <inertial>
+                <origin xyz="0 0 0" rpy="0 0 0"/> 
+                <mass value="${hullMass}"/>
+                <xacro:box_inertia m="${hullMass}" x="${hullX}" y="${hullY}" z="${hullZ}"/>
+            </inertial>
+
+            <collision> 
+                <origin xyz="0 0 0" rpy="0 0 0"/>  
+                <geometry> 
+                    <box size="${hullX} ${hullY} ${hullZ}"/> 
+                </geometry> 
+            </collision>
+
+            <visual> 
+                <origin xyz="0 0 0" rpy="0 0 0"/> 
+                <geometry> 
+                    <box size="${hullX} ${hullY} ${hullZ}"/> 
+                </geometry> 
+
+                <!-- Port/Starboard colors -->
+                <xacro:if value="${left == 1}">
+                    <material name="red"/>
+                </xacro:if>
+                <xacro:unless value="${left == 1}">
+                    <material name="green"/>
+                </xacro:unless>
+            </visual>
+        </link>
+    </xacro>
+
+</robot>
