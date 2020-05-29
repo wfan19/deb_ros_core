@@ -1,0 +1,71 @@
+<?xml version="1.0"?>
+<robot name="foilboat" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <macro name="cylinder_inertia" params="m r h">
+        <inertia  ixx="${m*(3*r*r+h*h)/12}" ixy = "0" ixz = "0"
+            iyy="${m*(3*r*r+h*h)/12}" iyz = "0"
+            izz="${m*r*r/2}"
+        />
+    </macro>
+
+    <macro name="box_inertia" params="m x y z">
+        <inertia  ixx="${m*(y*y+z*z)/12}" ixy = "0" ixz = "0"
+            iyy="${m*(x*x+z*z)/12}" iyz = "0"
+            izz="${m*(x*x+z*z)/12}"
+        />
+    </macro>
+
+    <macro name="sphere_inertia" params="m r">
+        <inertia  ixx="${2*m*r*r/5}" ixy = "0" ixz = "0"
+            iyy="${2*m*r*r/5}" iyz = "0"
+            izz="${2*m*r*r/5}"
+        />
+    </macro>
+
+    <xacro:macro name="joint_transmission" params="joint_name reduction:=10">
+        <transmission name="${joint_name}_transmission">
+            <type>transmission_interface/SimpleTransmission</type>
+            <joint name="${joint_name}_joint">
+                <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+            </joint>
+            <actuator name="${joint_name}_servo">
+                <hardwareInterface>EffortJointInterface</hardwareInterface>
+                <mechanicalReduction>${reduction}</mechanicalReduction>
+            </actuator>
+        </transmission>
+    </xacro:macro>
+
+    <xacro:macro name="sphere_marker"
+        params="name markerX markerY markerZ markerR:=0 markerP:=0 markerY:=0 markerRadius:=0.1"
+    >
+        <link name="${name}">
+            <visual>
+                <origin xyz="0 0 0" rpy="0 0 0"/>
+                <geometry>
+                    <sphere radius="${markerRadius}"/>
+                </geometry>
+                <material name="orange"/>
+            </visual>
+
+            <collision>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <geometry>
+                    <sphere radius="${markerRadius}" />
+                </geometry>
+            </collision>
+
+            <inertial>
+                <origin xyz="0 0 0" rpy="0 0 0" />
+                <mass value="1" />
+                <xacro:sphere_inertia m="1" r="${markerRadius}" />
+            </inertial>
+        </link>
+
+        <joint name="${name}_joint" type="fixed">
+            <parent link="body"/>
+            <child link="${name}"/>
+            <origin xyz="${markerX} ${markerY} ${markerZ}" rpy="0 0 0"/>
+        </joint>
+    </xacro:macro>
+
+</robot>

@@ -1,35 +1,79 @@
 <?xml version="1.0"?>
 <robot name="foilboat" xmlns:xacro="http://www.ros.org/wiki/xacro">
-    <xacro name="hull" params="name port">
-        <link name="${name}_hull">
-            <inertial>
-                <origin xyz="0 0 0" rpy="0 0 0"/> 
-                <mass value="${hullMass}"/>
-                <xacro:box_inertia m="${hullMass}" x="${hullX}" y="${hullY}" z="${hullZ}"/>
-            </inertial>
+  <xacro:include filename="$(find foilboat_description)/urdf/macros.xacro" />
 
-            <collision> 
-                <origin xyz="0 0 0" rpy="0 0 0"/>  
-                <geometry> 
-                    <box size="${hullX} ${hullY} ${hullZ}"/> 
-                </geometry> 
-            </collision>
+  <xacro:macro name="beam" params="name front">
+    <link name="${name}_beam">
+      <inertia>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <mass value="${beamMass}"/>
+        <xacro:box_inertia m="${beamMass}" x="${beamX}" y="${beamY}" z="${beamZ}"/>
+      </inertia>
 
-            <visual> 
-                <origin xyz="0 0 0" rpy="0 0 0"/> 
-                <geometry> 
-                    <box size="${hullX} ${hullY} ${hullZ}"/> 
-                </geometry> 
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <box size="${beamX} ${beamY} ${beamZ}" />
+        </geometry>
+      </collision>
 
-                <!-- Port/Starboard colors -->
-                <xacro:if value="${left == 1}">
-                    <material name="red"/>
-                </xacro:if>
-                <xacro:unless value="${left == 1}">
-                    <material name="green"/>
-                </xacro:unless>
-            </visual>
-        </link>
-    </xacro>
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <box size="${beamX} ${beamY} ${beamZ}"/>
+        </geometry>
+        <material name="grey"/>
+      </visual>
+    </link>
+
+    <joint name="${name}_base_joint" type="fixed">
+      <parent link="base_link" />
+      <child link="${name}_beam" />
+      <xacro:if value="${front == 1}">
+        <origin xyz="0 0 0" rpy="0 0 0" />
+      </xacro:if>
+      <xacro:unless value="${front == 1}">
+        <origin xyz="${-hullX + beamX/2} 0 0" rpy="0 0 0" />
+      </xacro:unless>
+    </joint>
+  </xacro:macro>
+
+  <xacro:macro name="hull" params="name port">
+    <link name="${name}_hull">
+      <inertial>
+        <origin xyz="0 0 0" rpy="0 0 0"/> 
+        <mass value="${hullMass}"/>
+        <xacro:box_inertia m="${hullMass}" x="${hullX}" y="${hullY}" z="${hullZ}"/>
+      </inertial>
+
+      <collision> 
+        <origin xyz="0 0 0" rpy="0 0 0"/>  
+        <geometry> 
+          <box size="${hullX} ${hullY} ${hullZ}"/> 
+        </geometry> 
+      </collision>
+
+      <visual> 
+        <origin xyz="0 0 0" rpy="0 0 0"/> 
+        <geometry> 
+          <box size="${hullX} ${hullY} ${hullZ}"/> 
+        </geometry> 
+
+        <!-- Port/Starboard colors -->
+        <xacro:if value="${port == 1}">
+          <material name="red"/>
+        </xacro:if>
+        <xacro:unless value="${port == 1}">
+          <material name="green"/>
+        </xacro:unless>
+      </visual>
+    </link>
+
+    <joint name="${name}_hull_beam_joint" type="fixed">
+      <parent link="front_beam" />
+      <child link="${name}_hull" />
+      <origin xyz="0 ${port * (beamY/2 - hullY/2)} ${-hullZ/2}" rpy="0 0 0" />
+    </joint>
+  </xacro:macro>
 
 </robot>
