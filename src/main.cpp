@@ -14,7 +14,7 @@ int main(int argc, char **argv){
     Toughsonic mToughsonic(sensorConfig);
     mToughsonic.setSensorReadCallback([&](double dist){
         // V Logging message V
-        // ROS_INFO("Distance: %d", dist);
+        ROS_INFO("Distance: %d", dist);
         
         std_msgs::Float64 distanceMsg;
         distanceMsg.data = dist;
