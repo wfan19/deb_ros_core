@@ -20,7 +20,7 @@ int main(int argc, char **argv){
         distanceMsg.data = dist;
         distancePub.publish(distanceMsg);
     });
-    mToughsonic.start(1);
+    mToughsonic.start(10);
 
     ROS_INFO("Spinning node");
     while(ros::ok()){
