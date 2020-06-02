@@ -2,19 +2,16 @@
 #define TOUGHSONIC_HPP
 
 #include <SerialStream.h>
-#include <atomic>
-#include <thread>
-#include <chrono>
 #include <iostream>
 #include <string>
 #include <vector>
-#include <functional>
 
 using namespace LibSerial;
-class Toughsonic{
+class Toughsonic
+{
 public:
-    
-    struct SensorConfig{
+    struct SensorConfig
+    {
         std::string filename = "/dev/ttyUSB0";
         SerialStreamBuf::BaudRateEnum baudRate = SerialStreamBuf::BAUD_9600;
         SerialStreamBuf::CharSizeEnum characterSize = SerialStreamBuf::CHAR_SIZE_8;
@@ -26,18 +23,10 @@ public:
     Toughsonic(SensorConfig sensorConfig);
     ~Toughsonic();
 
-    void start(unsigned int updateIntervalMS);
-    void close();
-
-    void setSensorReadCallback(std::function<void(double)> callback);
+    double read();
 
 private:    
     LibSerial::SerialStream sensorStream;
-    
-    std::atomic<bool> running{false};
-    std::thread updateThread;
-
-    std::function<void(double)> onSensorReadCallback;
 };
 
 #endif
