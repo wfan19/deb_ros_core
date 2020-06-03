@@ -1,0 +1,21 @@
+foilboat_controller:
+  # Subscriber topics
+  # TODO: Once robot_localization is implemented, this will just be /odom/filtered
+  imu_topic: /plane_ros/imu
+  laser_topic: /plane_ros/lidar
+  target_topic: /plane_ros/target
+
+  # Publisher topics
+  control_topic: /planesim_gazebo/control
+
+  controller_frequency: 10
+
+  # Parameters for the roll controller
+  roll_controller:
+    pidff: {p: 0.5, i: 0.01, d: 0, ff: 0, i_min: -0.005, i_max: 0.005, min: -1, max: 1}
+
+  altitude_rate_controller:
+    pidff: {p: 0.3, i: 0.0, d: 0, ff: 0, i_min: -0.05, i_max: 0.05, min: -1, max: 1}
+
+  altitude_controller:
+    pidff: {p: 0.5, i: 0.0, d: 0, ff: 0, i_min: -0.005, i_max: 0.005, min: -1, max: 1}
