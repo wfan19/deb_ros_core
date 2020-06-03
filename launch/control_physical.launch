@@ -1,6 +1,6 @@
 <launch>	  
 
-  <rosparam file="$(find foilboat_controller)/config/config.yaml" command="load" />
+  <rosparam file="$(find foilboat_controller)/config/config_physical.yaml" command="load" />
 
   <!-- <node pkg="foilboat_controller" -->
 
