@@ -29,3 +29,6 @@ range_sensor_wrapper:
 
   # Publisher topic
   z_estimate_topic: /foilboat/z_estimate
+
+  # Sensor covariance
+  sensor_covariance: 0.04
