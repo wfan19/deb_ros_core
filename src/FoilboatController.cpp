@@ -60,28 +60,39 @@ bool FoilboatController::init()
     return false;
   }
 
-  string imu_topic_name, laser_topic_name, target_topic_name, control_topic_name;
-  // Initialize IMU subscriber
-  if(n.getParam("foilboat_controller/imu_topic", imu_topic_name))
-  {
-    imu_sub = n.subscribe(imu_topic_name, 1000, &FoilboatController::onImu, this);
-    ROS_INFO("IMU subscriber initialized");
-  }
-  else
-  {
-    ROS_ERROR("Failed to find param /foilboat_controller/imu_topic");
-    return false;
-  }
+  string odom_topic_name, imu_topic_name, laser_topic_name, target_topic_name, control_topic_name, state_topic_name;
+  // // Initialize IMU subscriber
+  // if(n.getParam("foilboat_controller/imu_topic", imu_topic_name))
+  // {
+  //   imu_sub = n.subscribe(imu_topic_name, 1000, &FoilboatController::onImu, this);
+  //   ROS_INFO("IMU subscriber initialized");
+  // }
+  // else
+  // {
+  //   ROS_ERROR("Failed to find param /foilboat_controller/imu_topic");
+  //   return false;
+  // }
 
-  // Initialize laser subscriber
-  if(n.getParam("foilboat_controller/laser_topic", laser_topic_name))
+  // // Initialize laser subscriber
+  // if(n.getParam("foilboat_controller/laser_topic", laser_topic_name))
+  // {
+  //   laser_sub = n.subscribe(laser_topic_name, 1000, &FoilboatController::onLaser, this);
+  //   ROS_INFO("Laser subscriber initialized");
+  // }
+  // else
+  // {
+  //   ROS_ERROR("Failed to find param /foilboat_controller/laser_topic");
+  //   return false;
+  // }
+
+  if(n.getParam("foilboat_controller/odom_topic", odom_topic_name))
   {
-    laser_sub = n.subscribe(laser_topic_name, 1000, &FoilboatController::onLaser, this);
-    ROS_INFO("Laser subscriber initialized");
+    odom_sub = n.subscribe(odom_topic_name, 1000, &FoilboatController::onOdom, this);
+    ROS_INFO("Odom subscriber initialized");
   }
   else
   {
-    ROS_ERROR("Failed to find param /foilboat_controller/laser_topic");
+    ROS_ERROR("Failed to find param /foilboat_controller/odom_topic");
     return false;
   }
 
@@ -108,6 +119,17 @@ bool FoilboatController::init()
     return false;
   }
 
+  if(n.getParam("foilboat_controller/state_topic", state_topic_name))
+  {
+    state_pub = n.advertise<foilboat_controller::FoilboatState>(state_topic_name, 100);
+    ROS_INFO("State publisher initialized");
+  }
+  else
+  {
+    ROS_ERROR("Failed to find param /foilboat_controller/state_topic");
+    return false;
+  }
+
   int frequency;
   if(n.getParam("foilboat_controller/controller_frequency", frequency))
   {
@@ -119,9 +141,6 @@ bool FoilboatController::init()
     ROS_ERROR("Failed to find param /foilboat_controller/controller_frequency");
     return false;
   }
-  
-  // Advertise the state publisher
-  state_pub = n.advertise<foilboat_controller::FoilboatState>("/plane_ros/state", 100);
 
   return true;
 }
@@ -175,7 +194,6 @@ void FoilboatController::onImu(const sensor_msgs::Imu::ConstPtr& imuPtr)
   ROS_INFO("onIMU");
   geometry_msgs::Quaternion orientation = imuPtr->orientation;
   lastOrientation = tf2::Quaternion(orientation.x, orientation.y, orientation.z, orientation.w);
-  this->lastIMUMsg = imuPtr;
 
   tf2::Matrix3x3 quaternion_rotation_matrix(lastOrientation);
   double last_roll, last_pitch, last_yaw;
@@ -189,11 +207,9 @@ void FoilboatController::onImu(const sensor_msgs::Imu::ConstPtr& imuPtr)
 // Laser sensor topic subscriber callback
 void FoilboatController::onLaser(const sensor_msgs::LaserScan::ConstPtr& laserPtr)
 {
-  this->lastLaser = laserPtr;
-
-  if(lastLaser->ranges[0] < 35 && lastLaser->ranges[0] > 0)
+  if(laserPtr->ranges[0] < 35 && laserPtr->ranges[0] > 0)
   {
-    float z_estimate = lastLaser->ranges[0] * cos(last_state.pitch) * cos(last_state.roll);
+    float z_estimate = laserPtr->ranges[0] * cos(last_state.pitch) * cos(last_state.roll);
     ROS_INFO("altitudeRate = (%f - %f) / (%f - %f)",
       z_estimate,
       last_state.altitude,
@@ -203,6 +219,27 @@ void FoilboatController::onLaser(const sensor_msgs::LaserScan::ConstPtr& laserPt
     last_state.altitude = z_estimate;
     last_laser_time = ros::Time::now();
   }
+}
+
+void FoilboatController::onOdom(const nav_msgs::Odometry::ConstPtr& odomPtr)
+{
+  ROS_INFO("onOdom");
+  // Update current orientation estimate
+  geometry_msgs::Quaternion orientation = odomPtr->pose.pose.orientation;
+  lastOrientation = tf2::Quaternion(orientation.x, orientation.y, orientation.z, orientation.w);
+
+  // Convert quat to rpy
+  tf2::Matrix3x3 quaternion_rotation_matrix(lastOrientation);
+  double last_roll, last_pitch, last_yaw;
+  quaternion_rotation_matrix.getRPY(last_roll, last_pitch, last_yaw);
+
+  last_state.pitch = last_pitch;
+  last_state.roll = last_roll;
+  last_state.yaw = last_yaw;
+  
+  // Update altitude and altitude rate estimate
+  last_state.altitude = odomPtr->pose.pose.position.z;
+  last_state.altitudeRate = odomPtr->twist.twist.linear.z;
 }
 
 
