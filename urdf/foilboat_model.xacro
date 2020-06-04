@@ -53,7 +53,34 @@
     <origin xyz="0 0 0" rpy="${pi} 0 ${pi/2}"/>
   </joint>
 
+  <link name="toughsonic_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <sphere radius="0.1"/>
+      </geometry>
+      <material name="orange"/>
+    </visual>
 
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.1" />
+      </geometry>
+    </collision>
+
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="1" />
+      <xacro:sphere_inertia m="1" r="0.1" />
+    </inertial>
+  </link>
+
+  <joint name="toughsonic_link_joint" type="fixed">
+    <parent link="front_beam"/>
+    <child link="toughsonic_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
 
 
 </robot>
