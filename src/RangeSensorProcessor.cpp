@@ -56,6 +56,17 @@ bool RangeSensorProcessor::init()
     ROS_ERROR("Failed to find param /range_sensor_wrapper/z_estimate_topic");
     return false;
   }
+
+  if(n.getParam("range_sensor_wrapper/sensor_covariance", this->sensor_covariance))
+  {
+    ROS_INFO("Sensor covariance initialized");
+  }
+  else
+  {
+    ROS_ERROR("Failed to find param /range_sensor_wrapper/Sensor_covariance");
+    return false;
+  }
+  
   return true;
 }
 
@@ -90,7 +101,7 @@ void RangeSensorProcessor::publishMsg(double data)
   {
     covariance[i] = 0;
   }
-  covariance[14] = 0.04 * cos(last_state->roll) * cos(last_state->pitch);
+  covariance[14] = this->sensor_covariance * cos(last_state->roll) * cos(last_state->pitch);
 
   pose_with_covariance_stamped_out.header.stamp = ros::Time::now();
   pose_with_covariance_stamped_out.header.frame_id = "toughsonic_link";

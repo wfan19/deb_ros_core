@@ -31,6 +31,8 @@ private:
   ros::Subscriber laser_sub;
   ros::Subscriber float_sub;
 
+  float sensor_covariance;
+
   foilboat_controller::FoilboatState::ConstPtr last_state{new foilboat_controller::FoilboatState};
 };
 
