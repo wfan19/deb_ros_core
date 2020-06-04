@@ -8,7 +8,10 @@ int main(int argc, char** argv)
   ros::NodeHandle n;
 
   RangeSensorProcessor mRangeSensorProcessor(n);
-  mRangeSensorProcessor.run();
+  if(mRangeSensorProcessor.init())
+  {
+    mRangeSensorProcessor.run();
+  }
   
   return EXIT_SUCCESS;
 }
