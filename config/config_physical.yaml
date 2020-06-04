@@ -2,7 +2,7 @@ foilboat_controller:
   # Subscriber topics
   # TODO: Once robot_localization is implemented, this will just be /odom/filtered
   target_topic: /foilbloat/target
-  pose_topic: /foilboat/odometry/filtered/odom 
+  odom_topic: /foilboat/odometry/filtered/odom 
 
   # Publisher topics
   control_topic: /foilboat/control
@@ -22,10 +22,10 @@ foilboat_controller:
 
 range_sensor_wrapper:
   # Subscriber topics
-  imu_topic: /vectornav/imu
+  imu_topic: /vectornav/IMU
 
   # Use float instead of laser for real boat
-  float_topic: /toughsonic/sensor/distance
+  float_topic: /toughsonic/distance/value
 
   # Publisher topic
   z_estimate_topic: /foilboat/z_estimate

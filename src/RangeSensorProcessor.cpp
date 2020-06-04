@@ -85,7 +85,7 @@ void RangeSensorProcessor::publishMsg(double data)
   boost::array<float, 36> covariance;
   geometry_msgs::PoseWithCovarianceStamped pose_with_covariance_stamped_out;
 
-  float z_measured = data * cos(last_state->roll) * cos(last_state->pitch);
+  float z_measured = data * cos(last_state->roll) * cos(last_state->pitch) * 0.0254;
   for(int i = 0; i < 36; i++)
   {
     covariance[i] = 0;
@@ -93,6 +93,7 @@ void RangeSensorProcessor::publishMsg(double data)
   covariance[14] = 0.04 * cos(last_state->roll) * cos(last_state->pitch);
 
   pose_with_covariance_stamped_out.header.stamp = ros::Time::now();
+  pose_with_covariance_stamped_out.header.frame_id = "toughsonic_link";
   pose_with_covariance_stamped_out.pose.pose.position.z = z_measured;
   pose_with_covariance_stamped_out.pose.covariance = covariance;
 

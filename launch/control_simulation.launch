@@ -6,7 +6,7 @@
 
   <node pkg="foilboat_controller" type="controller_node" name="foilboat_controller_node" output="screen" />
 
-  <node pkg="foilboat_controller" type="range_sensor_wrapper_node" name="range_sensor_wrapper_node" />
+  <node pkg="foilboat_controller" type="range_sensor_wrapper_node" name="range_sensor_wrapper_node" output="screen"/>
 
   <arg name="model" value="$(find foilboat_description)/urdf/foilboat_model.xacro"/>
 
@@ -16,7 +16,7 @@
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
 
   <node pkg="robot_localization" type="ekf_localization_node" name="foilboat_odom">
-    <param name="frequency" value="10." />
+    <param name="frequency" value="100" />
     <param name="sensor_timeout" value="0.2" />
     <param name="two_d_mode" value="false" />
     <param name="publish_tf" value="true" />
@@ -38,9 +38,9 @@
       true, true, true]
     </rosparam>
 
-    <param name="height0" value="/plane_ros/z_estimate" />
-    <param name="height0_differential" value="false"/>
-    <rosparam param="height0_config">
+    <param name="pose0" value="/plane_ros/z_estimate" />
+    <param name="pose0_differential" value="false"/>
+    <rosparam param="pose0_config">
       [false, false, true,
       false, false, false,
       false, false, false,

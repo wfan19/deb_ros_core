@@ -2,7 +2,8 @@
 
   <rosparam file="$(find foilboat_controller)/config/config_physical.yaml" command="load" />
 
-  <!-- <node pkg="foilboat_controller" -->
+  <include file="$(find toughsonic)/launch/launch_sensor.launch" />
+  <include file="$(find vectornav)/launch/vectornav.launch" />
 
   <node pkg="foilboat_controller" type="controller_node" name="foilboat_controller_node" output="screen" />
 
@@ -27,7 +28,7 @@
     <param name="base_link_frame" value="base_link" />
     <param name="world_frame" value="odom" />
 
-    <param name="imu0" value="/plane_ros/imu" />
+    <param name="imu0" value="/vectornav/IMU" />
     <param name="imu0_differential" value="false"/>
     <param name="imu0_remove_gravitational_acceleration" value="true" />
     <rosparam param="imu0_config">
@@ -38,9 +39,9 @@
       true, true, true]
     </rosparam>
 
-    <param name="height0" value="/plane_ros/z_estimate" />
-    <param name="height0_differential" value="false"/>
-    <rosparam param="height0_config">
+    <param name="pose0" value="/foilboat/z_estimate" />
+    <param name="pose0_differential" value="false"/>
+    <rosparam param="pose0_config">
       [false, false, true,
       false, false, false,
       false, false, false,
@@ -48,7 +49,7 @@
       false, false, false]
     </rosparam>
 
-    <remap from="odometry/filtered" to="/plane_ros/odometry/filtered/odom" />
+    <remap from="odometry/filtered" to="/foilboat/odometry/filtered/odom" />
   </node>
 
   <!-- <node pkg="robot_localization" type="navsat_transform_node" name="navsat_transform">
@@ -104,7 +105,5 @@
 
     <remap from="odometry/filtered" to="odometry/filtered_map" />
   </node> -->
-
-
   
 </launch>
