@@ -1,3 +1,5 @@
+#include <string>
+
 #include "ros/ros.h"
 #include "std_msgs/Float64.h"
 #include <toughsonic/Toughsonic.hpp>
@@ -8,8 +10,15 @@ int main(int argc, char **argv){
 
     ros::Publisher distance_pub = n.advertise<std_msgs::Float64>("toughsonic/distance/value", 1000);
 
+    std::string filename;
+    if(!n.getParam("toughsonic_dev", filename))
+    {
+        ROS_ERROR("[Toughsonic]: Failed to get param /toughsonic_dev. Terminating.");
+        return -1;
+    }
+
     Toughsonic::SensorConfig sensor_config;
-    sensor_config.filename = "/dev/ttyUSB0";
+    sensor_config.filename = filename;
     sensor_config.baudRate = LibSerial::SerialStreamBuf::BAUD_9600;
     Toughsonic mToughsonic(sensor_config);
 
