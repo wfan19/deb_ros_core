@@ -33,7 +33,7 @@
         <origin xyz="0 0 0" rpy="0 0 0" />
       </xacro:if>
       <xacro:unless value="${front == 1}">
-        <origin xyz="${-hullX + beamX/2} 0 0" rpy="0 0 0" />
+        <origin xyz="${-hullX/2 + beamX/2} 0 0" rpy="0 0 0" />
       </xacro:unless>
     </joint>
   </xacro:macro>

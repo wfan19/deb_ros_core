@@ -20,6 +20,7 @@
   <link name="base_link" />
 
   <xacro:beam name="front" front="1" />
+  <xacro:beam name="back" front="-1"/>
 
   <xacro:hull name="left" port="1" />
   <xacro:hull name="right" port="-1" />
@@ -50,7 +51,7 @@
   <joint name="imu_link_joint" type="fixed">
     <parent link="front_beam"/>
     <child link="imu_link"/>
-    <origin xyz="0 0 0" rpy="${pi} 0 ${pi/2}"/>
+    <origin xyz="0 0 0" rpy="${pi} 0 0"/>
   </joint>
 
   <link name="toughsonic_link">
