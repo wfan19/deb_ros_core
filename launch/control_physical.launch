@@ -6,8 +6,8 @@
   <include file="$(find vectornav)/launch/vectornav.launch" />
 
   <node pkg="foilboat_controller" type="controller_node" name="foilboat_controller_node" output="screen" />
-
   <node pkg="foilboat_controller" type="range_sensor_wrapper_node" name="range_sensor_wrapper_node" />
+  <node pkg="foilboat_controller" type="foilboat_llc_node" name="foilboat_llc_node" output="screen" />
 
   <arg name="model" value="$(find foilboat_description)/urdf/foilboat_model.xacro"/>
 
@@ -39,15 +39,16 @@
       true, true, false]
     </rosparam>
 
-    <param name="pose0" value="/foilboat/z_estimate" />
+
+    <!-- <param name="pose0" value="/foilboat/z_estimate" />
     <param name="pose0_differential" value="false"/>
     <rosparam param="pose0_config">
-      [false, false, true,
+      [false, false, false,
       false, false, false,
       false, false, false,
       false, false, false,
       false, false, false]
-    </rosparam>
+    </rosparam> -->
 
     <remap from="odometry/filtered" to="/foilboat/odometry/filtered/odom" />
   </node>
