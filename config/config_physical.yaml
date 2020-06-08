@@ -1,7 +1,8 @@
 foilboat_controller:
   # Subscriber topics
   # TODO: Once robot_localization is implemented, this will just be /odom/filtered
-  target_topic: /foilbloat/target
+  target_topic: /foilboat/target
+  z_estimate_topic: /foilboat/z_estimate
   odom_topic: /foilboat/odometry/filtered/odom 
 
   # Publisher topics
@@ -32,3 +33,9 @@ range_sensor_wrapper:
 
   # Sensor covariance
   sensor_covariance: 0.04
+
+low_level_control:
+  left_wing: /minimaestro/left_wing/target
+  right_wing: /minimaestro/right_wing/target
+
+  control: /foilboat/control
