@@ -60,30 +60,38 @@ bool FoilboatController::init()
     return false;
   }
 
-  string odom_topic_name, imu_topic_name, laser_topic_name, target_topic_name, control_topic_name, state_topic_name;
-  // // Initialize IMU subscriber
-  // if(n.getParam("foilboat_controller/imu_topic", imu_topic_name))
-  // {
-  //   imu_sub = n.subscribe(imu_topic_name, 1000, &FoilboatController::onImu, this);
-  //   ROS_INFO("IMU subscriber initialized");
-  // }
-  // else
-  // {
-  //   ROS_ERROR("Failed to find param /foilboat_controller/imu_topic");
-  //   return false;
-  // }
+  string odom_topic_name, imu_topic_name, z_estimate_topic_name, laser_topic_name, target_topic_name, control_topic_name, state_topic_name;
+  // Initialize IMU subscriber
+  if(n.getParam("foilboat_controller/imu_topic", imu_topic_name))
+  {
+    imu_sub = n.subscribe(imu_topic_name, 1000, &FoilboatController::onImu, this);
+    ROS_INFO("IMU subscriber initialized");
+  }
+  else
+  {
+    ROS_ERROR("Failed to find param /foilboat_controller/imu_topic");
+  }
 
-  // // Initialize laser subscriber
-  // if(n.getParam("foilboat_controller/laser_topic", laser_topic_name))
-  // {
-  //   laser_sub = n.subscribe(laser_topic_name, 1000, &FoilboatController::onLaser, this);
-  //   ROS_INFO("Laser subscriber initialized");
-  // }
-  // else
-  // {
-  //   ROS_ERROR("Failed to find param /foilboat_controller/laser_topic");
-  //   return false;
-  // }
+  // Initialize laser subscriber
+  if(n.getParam("foilboat_controller/laser_topic", laser_topic_name))
+  {
+    laser_sub = n.subscribe(laser_topic_name, 1000, &FoilboatController::onLaser, this);
+    ROS_INFO("Laser subscriber initialized");
+  }
+  else
+  {
+    ROS_ERROR("Failed to find param /foilboat_controller/laser_topic");
+  }
+
+  // Initialize z estimate subscriber
+  if(n.getParam("foilboat_controller/z_estimate_topic", z_estimate_topic_name))
+  {
+    z_estimate_sub = n.subscribe(z_estimate_topic_name, 1000, &FoilboatController::onZEstimate, this);
+  }
+  else
+  {
+    ROS_ERROR("Failed to find param /foilboat_controller/z_estimate_topic");
+  }
 
   if(n.getParam("foilboat_controller/odom_topic", odom_topic_name))
   {
@@ -215,7 +223,18 @@ void FoilboatController::onLaser(const sensor_msgs::LaserScan::ConstPtr& laserPt
       last_state.altitude,
       ros::Time::now().toSec(),
       last_laser_time.toSec());
-    last_state.altitudeRate = (z_estimate - last_state.altitude) - (ros::Time::now().toSec() - last_laser_time.toSec());
+    last_state.altitudeRate = (z_estimate - last_state.altitude) / (ros::Time::now().toSec() - last_laser_time.toSec());
+    last_state.altitude = z_estimate;
+    last_laser_time = ros::Time::now();
+  }
+}
+
+void FoilboatController::onZEstimate(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& posePtr)
+{
+  double z_estimate = posePtr->pose.pose.position.z;
+  if (z_estimate < 35 && z_estimate > 0)
+  {
+    last_state.altitudeRate = (z_estimate - last_state.altitude) / (ros::Time::now().toSec() - last_laser_time.toSec());
     last_state.altitude = z_estimate;
     last_laser_time = ros::Time::now();
   }
@@ -236,10 +255,11 @@ void FoilboatController::onOdom(const nav_msgs::Odometry::ConstPtr& odomPtr)
   last_state.pitch = last_pitch;
   last_state.roll = last_roll;
   last_state.yaw = last_yaw;
-  
+
   // Update altitude and altitude rate estimate
-  last_state.altitude = odomPtr->pose.pose.position.z;
-  last_state.altitudeRate = odomPtr->twist.twist.linear.z;
+  // Commented until I can fix Z position localization
+  // last_state.altitude = odomPtr->pose.pose.position.z;
+  // last_state.altitudeRate = odomPtr->twist.twist.linear.z;
 }
 
 
