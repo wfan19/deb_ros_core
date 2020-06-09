@@ -1,3 +1,4 @@
 float64 rightFoil
 float64 leftFoil
 float64 elevatorFoil
+float64 altitudeRateTarget
