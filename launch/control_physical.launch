@@ -4,6 +4,7 @@
 
   <include file="$(find toughsonic)/launch/launch_sensor.launch" />
   <include file="$(find vectornav)/launch/vectornav.launch" />
+  <include file="$(find minimaestro)/launch/launch.launch" />
 
   <node pkg="foilboat_controller" type="controller_node" name="foilboat_controller_node" output="screen" />
   <node pkg="foilboat_controller" type="range_sensor_wrapper_node" name="range_sensor_wrapper_node" />
@@ -36,7 +37,7 @@
       true, true, true,
       false, false, false,
       true, true, true,
-      true, true, false]
+      false, false, false]
     </rosparam>
 
 
