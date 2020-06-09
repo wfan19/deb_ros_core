@@ -12,11 +12,12 @@ foilboat_controller:
   controller_frequency: 10
 
   # Parameters for the roll controller
+  # Configure min max to be the range of the flaps in radians
   roll_controller:
-    pidff: {p: 0.5, i: 0.0, d: 0, ff: 0, i_min: -0.005, i_max: 0.005, min: -1, max: 1}
+    pidff: {p: 0.5, i: 0.01, d: 0, ff: 0, i_min: -0.005, i_max: 0.005, min: -0.5233, max: 0}
 
   altitude_rate_controller:
-    pidff: {p: 0.3, i: 0.0, d: 0, ff: 0, i_min: -0.05, i_max: 0.05, min: -1, max: 1}
+    pidff: {p: 0.3, i: 0.0, d: 0, ff: 0, i_min: -0.05, i_max: 0.05, min: -0.5233, max: 0}
 
   altitude_controller:
     pidff: {p: 0.5, i: 0.0, d: 0, ff: 0, i_min: -0.005, i_max: 0.005, min: -1, max: 1}
@@ -39,3 +40,5 @@ low_level_control:
   right_wing: /minimaestro/rightWing/target
 
   control: /foilboat/control
+
+  flap_range: {min: -0.5233, max: 0}
