@@ -56,7 +56,7 @@ bool FoilboatController::init()
   }
   else
   {
-    ROS_ERROR("Failed to find param /foilboat_controller/altitude_cnontroller/pidff");
+    ROS_ERROR("Failed to find param /foilboat_controller/altitude_controller/pidff");
     return false;
   }
 
@@ -223,7 +223,7 @@ void FoilboatController::onLaser(const sensor_msgs::LaserScan::ConstPtr& laserPt
       last_state.altitude,
       ros::Time::now().toSec(),
       last_laser_time.toSec());
-    last_state.altitudeRate = (z_estimate - last_state.altitude) / (ros::Time::now().toSec() - last_laser_time.toSec());
+    last_state.altitudeRate = (z_estimate - last_state.altitude);// - (ros::Time::now().toSec() - last_laser_time.toSec());
     last_state.altitude = z_estimate;
     last_laser_time = ros::Time::now();
   }
@@ -234,7 +234,7 @@ void FoilboatController::onZEstimate(const geometry_msgs::PoseWithCovarianceStam
   double z_estimate = posePtr->pose.pose.position.z;
   if (z_estimate < 35 && z_estimate > 0)
   {
-    last_state.altitudeRate = (z_estimate - last_state.altitude) / (ros::Time::now().toSec() - last_laser_time.toSec());
+    last_state.altitudeRate = (z_estimate - last_state.altitude);// - (ros::Time::now().toSec() - last_laser_time.toSec());
     last_state.altitude = z_estimate;
     last_laser_time = ros::Time::now();
   }
