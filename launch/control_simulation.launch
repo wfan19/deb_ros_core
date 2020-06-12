@@ -2,13 +2,10 @@
 
   <rosparam file="$(find foilboat_controller)/config/config_simulation.yaml" command="load" />
 
-  <!-- <node pkg="foilboat_controller" -->
-
   <node pkg="foilboat_controller" type="controller_node" name="foilboat_controller_node" output="screen" />
-
   <node pkg="foilboat_controller" type="range_sensor_wrapper_node" name="range_sensor_wrapper_node" output="screen"/>
 
-  <arg name="model" value="$(find foilboat_description)/urdf/foilboat_model.xacro"/>
+  <arg name="model" value="$(find foilboat_description)/urdf/planesim_model.xacro"/>
 
   <param name="robot_description" command="$(find xacro)/xacro $(arg model)" />
 
@@ -35,16 +32,6 @@
       true, true, true,
       false, false, false,
       true, true, true,
-      true, true, true]
-    </rosparam>
-
-    <param name="pose0" value="/plane_ros/z_estimate" />
-    <param name="pose0_differential" value="false"/>
-    <rosparam param="pose0_config">
-      [false, false, true,
-      false, false, false,
-      false, false, false,
-      false, false, false,
       false, false, false]
     </rosparam>
 
