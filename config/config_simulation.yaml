@@ -1,10 +1,20 @@
+p_altitude: &p_alt 0.2
+i_altitude: &i_alt 0.0
+d_altitude: &d_alt 0.0
+
+p_altitude_rate: &p_alt_rate 0.1
+i_altitude_rate: &i_alt_rate 0.0
+d_altitude_rate: &d_alt_rate 0.0
+
+p_roll: &p_roll 0.3
+i_roll: &i_roll 0.1
+d_roll: &d_roll 0.0
+
 foilboat_controller:
   # Subscriber topics
-  # TODO: Once robot_localization is implemented, this will just be /odom/filtered
-  # imu_topic: /plane_ros/imu
-  # laser_topic: /plane_ros/lidar
-  odom_topic: /plane_ros/odometry/filtered/odom
   target_topic: /plane_ros/target
+  z_estimate_topic: /plane_ros/z_estimate # Using direct laser measurement, no KF
+  odom_topic: /plane_ros/odometry/filtered/odom
 
   # Publisher topics
   control_topic: /planesim_gazebo/control
@@ -14,19 +24,22 @@ foilboat_controller:
 
   # Parameters for the roll controller
   roll_controller:
-    pidff: {p: 0.5, i: 0.01, d: 0, ff: 0, i_min: -0.005, i_max: 0.005, min: -1, max: 1}
+    pidff: {p: *p_roll, i: *i_roll, d: *d_roll, ff: 0, i_min: -0.005, i_max: 0.005, min: -0.523, max: 0.523}
 
   altitude_rate_controller:
-    pidff: {p: 0.3, i: 0.0, d: 0, ff: 0, i_min: -0.05, i_max: 0.05, min: -1, max: 1}
+    pidff: {p: *p_alt_rate, i: *i_alt_rate, d: *d_alt_rate, ff: 0, i_min: -0.05, i_max: 0.05, min: -0.523, max: 0.523}
 
   altitude_controller:
-    pidff: {p: 0.5, i: 0.0, d: 0, ff: 0, i_min: -0.005, i_max: 0.005, min: -1, max: 1}
+    pidff: {p: *p_alt, i: *i_alt, d: *d_alt, ff: 0, i_min: -0.005, i_max: 0.005, min: -1, max: 1}
 
 
 range_sensor_wrapper:
-
-  # Use laser instead of float for simulation
-  laser_topic: /plane_ros/lidar
+  # Subscriber topis
+  imu_topic: /plane_ros/imu
+  laser_topic: /plane_ros/lidar # Use laser instead of float for simulation
 
   # Publisher topic
   z_estimate_topic: /plane_ros/z_estimate
+
+  # Sensor covariance
+  sensor_covariance: 0.04

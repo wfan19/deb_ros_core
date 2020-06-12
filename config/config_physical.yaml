@@ -25,9 +25,7 @@ foilboat_controller:
 range_sensor_wrapper:
   # Subscriber topics
   imu_topic: /vectornav/IMU
-
-  # Use float instead of laser for real boat
-  float_topic: /toughsonic/distance/value
+  float_topic: /toughsonic/distance/value # Use float instead of laser for real boat
 
   # Publisher topic
   z_estimate_topic: /foilboat/z_estimate
