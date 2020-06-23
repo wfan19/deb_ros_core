@@ -104,7 +104,7 @@ void RangeSensorProcessor::publishMsg(double data)
   covariance[14] = this->sensor_covariance * cos(last_state->roll) * cos(last_state->pitch);
 
   pose_with_covariance_stamped_out.header.stamp = ros::Time::now();
-  pose_with_covariance_stamped_out.header.frame_id = "toughsonic_link";
+  pose_with_covariance_stamped_out.header.frame_id = "odom";
   pose_with_covariance_stamped_out.pose.pose.position.z = z_measured;
   pose_with_covariance_stamped_out.pose.covariance = covariance;
 
