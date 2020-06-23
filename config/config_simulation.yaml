@@ -13,7 +13,7 @@ d_roll: &d_roll 0.0
 foilboat_controller:
   # Subscriber topics
   target_topic: /plane_ros/target
-  z_estimate_topic: /plane_ros/z_estimate # Using direct laser measurement, no KF
+#  z_estimate_topic: /plane_ros/z_estimate # Using direct laser measurement, no KF
   odom_topic: /plane_ros/odometry/filtered/odom
 
   # Publisher topics
