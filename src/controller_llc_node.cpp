@@ -23,8 +23,8 @@ void onControl(const foilboat_controller::FoilboatControl::ConstPtr controlPtr)
     left_msg.data = left_flap;
     right_msg.data = right_flap;
 
-    left_msg.data += abs(flap_min);
-    right_msg.data += abs(flap_min);
+    left_msg.data -= flap_min;
+    right_msg.data -= flap_min;
 
     left_msg.data = left_msg.data / abs(flap_max - flap_min);
     right_msg.data = right_msg.data / abs(flap_max - flap_min);
