@@ -258,8 +258,9 @@ void FoilboatController::onOdom(const nav_msgs::Odometry::ConstPtr& odomPtr)
 
   // Update altitude and altitude rate estimate
   // Commented until I can fix Z position localization
-  // last_state.altitude = odomPtr->pose.pose.position.z;
-  // last_state.altitudeRate = odomPtr->twist.twist.linear.z;
+  last_state.altitudeRate = (odomPtr->pose.pose.position.z - last_state.altitude);
+  last_state.altitude = odomPtr->pose.pose.position.z;
+//  last_state.altitudeRate = odomPtr->twist.twist.linear.z;
 }
 
 
