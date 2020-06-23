@@ -1,5 +1,5 @@
 <launch>
-  <arg name="variant" />
+  <arg name="variant" default="foilboat"/>
   <arg name="model" value="$(find foilboat_description)/urdf/$(arg variant)_model.xacro"/>
   <arg name="rviz_conf" value="$(find foilboat_controller)/rviz/visualize_boat.rviz"/>
 
