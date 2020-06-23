@@ -87,8 +87,8 @@ foilboat_controller::FoilboatControl PIDWrapper::control(
 
   float roll_control = roll_controller.update(target->rollTarget, state->roll, time);
   ROS_INFO("Roll control: %f, Roll target: %f, Roll state: %f", roll_control, target->rollTarget, state->roll);
-  control_out.rightFoil = roll_control + flap_control;
-  control_out.leftFoil = -roll_control + flap_control;
+  control_out.rightFoil = roll_control + flap_control - state->pitch;
+  control_out.leftFoil = -roll_control + flap_control - state->pitch;
   
   // control_out.rightFoil = roll_control + elevator_control;
   // control_out.leftFoil = -roll_control + elevator_control;
