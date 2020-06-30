@@ -29,3 +29,13 @@ file(GLOB sFoundationSRC lib/sFoundation/*/src/*.cpp)
 file(GLOB sFoundationLinuxSRC lib/sFoundation/sFoundation/src-linux/*.cpp)
 
 add_library(libSFoundation ${sFoundationSRC} ${sFoundationLinuxSRC})
+
+add_executable(clearpath_driver_node
+  src/main.cpp
+  src/ClearpathDriver.cpp
+  src/Axis.cpp)
+
+target_link_libraries(clearpath_driver_node
+  ${catkin_LIBRARIES}
+  libSFoundation
+)
