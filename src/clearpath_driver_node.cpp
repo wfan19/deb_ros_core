@@ -7,7 +7,9 @@ int main(int argc, char** argv)
 
   ClearpathDriver mClearpathDriver(n);
 
-  mClearpathDriver.init();
+  int initialization_status = mClearpathDriver.init();
+  if(initialization_status < 0)
+    ros::shutdown();
 
   ros::Rate r(10);
   while(ros::ok())

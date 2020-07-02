@@ -8,6 +8,8 @@
 #include "ros/ros.h"
 #include "std_msgs/Float64.h"
 
+#include <clearpath_sc_ros/Axis.hpp>
+
 using namespace sFnd;
 class ClearpathDriver{
 public:
@@ -17,15 +19,12 @@ public:
   int init();
 
 private:
-  void onMotorCommand(std_msgs::Float64::ConstPtr floatMsg);
-
   ros::NodeHandle n;
 
   SysManager mSysManager;
+  vector<Axis*> axes_list;
 
-  int port_counter;
-
-  ros::Subscriber motor_sub;
+  int port_counter{0};
 };
 
 #endif //SRC_CLEARPATHDRIVER_HPP
