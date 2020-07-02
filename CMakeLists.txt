@@ -32,7 +32,8 @@ add_library(libSFoundation ${sFoundationSRC} ${sFoundationLinuxSRC})
 
 add_executable(clearpath_driver_node
   src/clearpath_driver_node.cpp
-  src/ClearpathDriver.cpp)
+  src/ClearpathDriver.cpp
+  src/Axis.cpp)
 
 target_link_libraries(clearpath_driver_node
   ${catkin_LIBRARIES}
