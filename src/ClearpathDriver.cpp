@@ -71,7 +71,7 @@ int ClearpathDriver::init()
     return -1;
   }
 
-  motor_sub = n.subscribe("motor0/position", 100, &ClearpathDriver::onMotorCommand, this);
+  motor_sub = n.subscribe("motor0/position", 1, &ClearpathDriver::onMotorCommand, this);
 
   return 0;
 }
@@ -87,8 +87,20 @@ void ClearpathDriver::onMotorCommand(std_msgs::Float64::ConstPtr floatMsg)
     if (buffer_available)
     {
       mSysManager.Ports(0).Nodes(0).Motion.MovePosnStart(floatMsg->data, true);
+      double move_time = mSysManager.Ports(0).Nodes(0).Motion.MovePosnDurationMsec(floatMsg->data, true);
 
-      
+      attnReg attn_mask, attn_read;
+      attn_mask.cpm.MoveDone = 1;
+      attn_mask.cpm.Disabled = 1;
+      attn_mask.cpm.NotReady = 1;
+
+      // Wait for motion to finish or abort
+      attn_read = mSysManager.Ports(0).Nodes(0).Adv.Attn.WaitForAttn(attn_mask, move_time + 20);
+      if(attn_read.cpm.NotReady || attn_read.cpm.Disabled)
+      {
+        ROS_ERROR("Servo not ready or disabled!! Shutting down program");
+        ros::shutdown();
+      }
     }
     else
       ROS_INFO("Move buffer full, skipping move command");
