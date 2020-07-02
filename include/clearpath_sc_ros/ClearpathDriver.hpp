@@ -4,20 +4,28 @@
 #include <string>
 #include <vector>
 
-#include "ros/ros.h"
 #include "pubSysCls.h"
+#include "ros/ros.h"
+#include "std_msgs/Float64.h"
 
 using namespace sFnd;
 class ClearpathDriver{
 public:
-  ClearpathDriver();
+  ClearpathDriver(ros::NodeHandle nh);
   ~ClearpathDriver();
 
   int init();
 
 private:
+  void onMotorCommand(std_msgs::Float64::ConstPtr floatMsg);
+
+  ros::NodeHandle n;
+
   SysManager mSysManager;
+
   int port_counter;
+
+  ros::Subscriber motor_sub;
 };
 
 #endif //SRC_CLEARPATHDRIVER_HPP
