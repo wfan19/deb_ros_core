@@ -3,9 +3,9 @@
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "Clearpath");
-  ros::NodeHandle n;
+  ros::NodeHandle n("clearpath");
 
-  ClearpathDriver mClearpathDriver;
+  ClearpathDriver mClearpathDriver(n);
 
   mClearpathDriver.init();
 
