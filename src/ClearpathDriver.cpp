@@ -39,9 +39,15 @@ int ClearpathDriver::init()
   IPort &port = mSysManager.Ports(0);
   port.Adv.Attn.Enable(true);
 
-  axes_list.push_back(new Axis("servo0", &n, &port.Nodes(0)));
-  if (axes_list[0]->start() != 0)
-    return -1;
+  for (int i = 0; i < port.NodeCount(); i++) {
+    // Fill axes_list with the axes(servos) connected to this port
+    axes_list.push_back(new Axis("servo" + to_string(i), &n, &port.Nodes(i)));
+    if (axes_list[i]->start() != 0)
+    {
+      ROS_ERROR("Servo %d failed to start!", i);
+      return -1;
+    }
+  }
 
   return 0;
 }
