@@ -3,12 +3,27 @@ project(clearpath_sc_ros)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
+  std_msgs
+  message_generation
+)
+
+add_message_files(
+  FILES
+  ServoConfig.msg
+  ServoState.msg
+)
+
+generate_messages(
+  DEPENDENCIES
+  std_msgs
 )
 
 catkin_package(
   INCLUDE_DIRS include
 #  LIBRARIES clearpath_sc_ros
-  CATKIN_DEPENDS roscpp
+  CATKIN_DEPENDS
+    roscpp
+    message_runtime
 #  DEPENDS system_lib
 )
 
@@ -33,7 +48,8 @@ add_library(libSFoundation ${sFoundationSRC} ${sFoundationLinuxSRC})
 add_executable(clearpath_driver_node
   src/clearpath_driver_node.cpp
   src/ClearpathDriver.cpp
-  src/Axis.cpp)
+  src/Axis.cpp
+)
 
 target_link_libraries(clearpath_driver_node
   ${catkin_LIBRARIES}

@@ -1,0 +1,6 @@
+string torque_unit
+float64 torque_limit
+
+string position_unit
+float64 soft_limit_1
+float64 soft_limit_2
