@@ -6,6 +6,7 @@ Axis::Axis(string axis_name, ros::NodeHandle* driver_nh, INode* node):
   mNode(node)
 {
   this->n = ros::NodeHandle(*driver_nh, axis_name);
+  this->axis_name = axis_name;
 }
 
 // Shutdown servo upon destroy
@@ -64,6 +65,9 @@ int Axis::start()
   // Start ros subscribers
   position_target_sub = n.subscribe("position_target", 1, &Axis::onPositionTarget, this);
 
+  // TODO: Set/get configuration via a service
+  getConfig_service = n.advertiseService("get_config", &Axis::getConfig, this);
+
   // Start threads
   status_thread = thread(&Axis::statusLoop, this);
   position_thread = thread(&Axis::positionLoop, this);
@@ -95,7 +99,6 @@ void Axis::statusLoop()
 // Position control thread loop
 void Axis::positionLoop()
 {
-  ros::Rate position_rate(500);
   while(ros::ok())
   {
     try
@@ -137,4 +140,31 @@ void Axis::positionLoop()
 void Axis::onPositionTarget(const std_msgs::Float64::ConstPtr target_msg)
 {
   this->position_target = target_msg->data;
+}
+
+bool Axis::getConfig(
+    clearpath_sc_ros::GetConfig::Request &req,
+    clearpath_sc_ros::GetConfig::Response &res
+)
+{
+  clearpath_sc_ros::ServoConfig current_config;
+
+  mNode->Limits.TrqGlobal.Refresh();
+  mNode->Limits.SoftLimit1.Refresh();
+  mNode->Limits.SoftLimit2.Refresh();
+
+  mNode->Info.PositioningResolution.Refresh();
+
+  if (mNode->TrqUnit() == mNode->PCT_MAX)
+    current_config.torque_unit = current_config.PCT_MAX;
+  else if (mNode->TrqUnit() == mNode->AMPS)
+    current_config.torque_unit = current_config.AMPS;
+
+  current_config.torque_limit = mNode->Limits.TrqGlobal;
+  current_config.soft_limit_1 = mNode->Limits.SoftLimit1;
+  current_config.soft_limit_2 = mNode->Limits.SoftLimit2;
+  current_config.encoder_cpr = mNode->Info.PositioningResolution;
+
+  res.current_config = current_config;
+  return true;
 }

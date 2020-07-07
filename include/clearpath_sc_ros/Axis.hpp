@@ -9,6 +9,7 @@
 
 #include <clearpath_sc_ros/ServoState.h>
 #include <clearpath_sc_ros/ServoConfig.h>
+#include <clearpath_sc_ros/GetConfig.h>
 
 using namespace sFnd;
 using namespace std;
@@ -29,6 +30,7 @@ private:
   // Node handles
   ros::NodeHandle n; // ROS node
   INode *mNode;      // Clearpath node (servo)
+  string axis_name;
 
   // Status publishing loop
   void statusLoop();
@@ -41,8 +43,13 @@ private:
   double last_error_code;
 
   ros::Subscriber position_target_sub;
-
   void onPositionTarget(const std_msgs::Float64::ConstPtr target_msg);
+
+  ros::ServiceServer getConfig_service;
+  bool getConfig(
+      clearpath_sc_ros::GetConfig::Request &req,
+      clearpath_sc_ros::GetConfig::Response &res
+  );
 };
 
 #endif //SRC_AXIS_HPP
