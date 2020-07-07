@@ -13,6 +13,11 @@ add_message_files(
   ServoState.msg
 )
 
+add_service_files(
+  FILES
+  GetConfig.srv
+)
+
 generate_messages(
   DEPENDENCIES
   std_msgs
