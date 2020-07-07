@@ -37,9 +37,11 @@ int ClearpathDriver::init()
   ROS_INFO("Opened %d ports", port_counter);
 
   IPort &port = mSysManager.Ports(0);
+  port.Adv.Attn.Enable(true);
 
   axes_list.push_back(new Axis("servo0", &n, &port.Nodes(0)));
-  axes_list[0]->start();
+  if (axes_list[0]->start() != 0)
+    return -1;
 
   return 0;
 }

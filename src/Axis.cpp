@@ -26,6 +26,13 @@ int Axis::start()
   mNode->EnableReq(true);
   ROS_INFO("Servo enabled");
 
+  // TODO: Add node ATTN mask initialization
+  attnReg attn_init_mask;
+  attn_init_mask.cpm.MoveDone = 1;
+  attn_init_mask.cpm.Disabled = 1;
+  attn_init_mask.cpm.NotReady = 1;
+  mNode->Adv.Attn.Mask = attn_init_mask;
+
   // Check homing
   ROS_INFO("Beginning homing");
   if (mNode->Motion.Homing.HomingValid())
@@ -83,22 +90,28 @@ void Axis::positionLoop()
   {
     try
     {
-      mNode->Motion.MovePosnStart(position_target, true);
-      double move_time = mNode->Motion.MovePosnDurationMsec(position_target, true);
-
       attnReg attn_mask, attn_read;
       attn_mask.cpm.MoveDone = 1;
       attn_mask.cpm.Disabled = 1;
       attn_mask.cpm.NotReady = 1;
+      mNode->Adv.Attn.ClearAttn(attn_mask);
+
+      int rem_buffer_slots = mNode->Motion.MovePosnStart(position_target, true);
+      ROS_INFO("Remaining buffer slots: %d", rem_buffer_slots);
+      double move_time = mNode->Motion.MovePosnDurationMsec(position_target, true);
 
       // Wait for motion to finish or abort
       attn_read = mNode->Adv.Attn.WaitForAttn(attn_mask, move_time + 20);
-      if(attn_read.cpm.NotReady || attn_read.cpm.Disabled)
+      if (attn_read.cpm.NotReady || attn_read.cpm.Disabled)
       {
         ROS_ERROR("Servo not ready or disabled!! Shutting down program");
         break;
       }
-      position_rate.sleep();
+      else if (!attn_read.cpm.MoveDone)
+      {
+        ROS_ERROR("Movement wait timed out");
+      }
+      ROS_INFO("Move done? %s", attn_read.cpm.MoveDone ? "True" : "False");
     }
     catch (mnErr error)
     {
