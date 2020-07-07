@@ -7,14 +7,17 @@
 #include "ros/ros.h"
 #include "std_msgs/Float64.h"
 
+#include <clearpath_sc_ros/ServoState.h>
+#include <clearpath_sc_ros/ServoConfig.h>
+
 using namespace sFnd;
 using namespace std;
 
 class Axis
 {
 private:
+  thread status_thread;
   thread position_thread;
-  thread main_thread;
 
 public:
   Axis(string axis_name, ros::NodeHandle* driver_nh, INode* node);
@@ -23,16 +26,19 @@ public:
   int start();
 
 private:
+  // Node handles
+  ros::NodeHandle n; // ROS node
+  INode *mNode;      // Clearpath node (servo)
 
-  ros::NodeHandle n;
-  INode *mNode;
+  // Status publishing loop
+  void statusLoop();
 
-  void mainLoop();
-
+  // Position control loop
   double position_target{0};
   void positionLoop();
 
-  ros::Publisher position_state_pub;
+  ros::Publisher servo_state_pub;
+  double last_error_code;
 
   ros::Subscriber position_target_sub;
 

@@ -1,6 +1,5 @@
 #include <clearpath_sc_ros/Axis.hpp>
 
-
 using namespace sFnd;
 using namespace std;
 Axis::Axis(string axis_name, ros::NodeHandle* driver_nh, INode* node):
@@ -9,13 +8,15 @@ Axis::Axis(string axis_name, ros::NodeHandle* driver_nh, INode* node):
   this->n = ros::NodeHandle(*driver_nh, axis_name);
 }
 
+// Shutdown servo upon destroy
 Axis::~Axis()
 {
-  main_thread.~thread();
+  status_thread.~thread();
   position_thread.~thread();
   mNode->EnableReq(false);
 }
 
+// Initialization
 int Axis::start()
 {
   // Enable node
@@ -26,7 +27,8 @@ int Axis::start()
   mNode->EnableReq(true);
   ROS_INFO("Servo enabled");
 
-  // TODO: Add node ATTN mask initialization
+  // Initialize Attn mask
+  // Tells servo which attn msgs to send via SDK
   attnReg attn_init_mask;
   attn_init_mask.cpm.MoveDone = 1;
   attn_init_mask.cpm.Disabled = 1;
@@ -57,32 +59,40 @@ int Axis::start()
   }
 
   // Start ros publishers
-  position_state_pub = n.advertise<std_msgs::Float64>("position_state", 10);
+  servo_state_pub = n.advertise<clearpath_sc_ros::ServoState>("state", 10);
 
   // Start ros subscribers
   position_target_sub = n.subscribe("position_target", 1, &Axis::onPositionTarget, this);
 
   // Start threads
-  main_thread = thread(&Axis::mainLoop, this);
+  status_thread = thread(&Axis::statusLoop, this);
   position_thread = thread(&Axis::positionLoop, this);
   return 0;
 }
 
-void Axis::mainLoop()
+// Main status publishing thread loop
+void Axis::statusLoop()
 {
-  ros::Rate main_rate(10);
+  ros::Rate status_rate(10);
   while(ros::ok())
   {
-    double current_position = mNode->Motion.PosnMeasured;
-    std_msgs::Float64 position_state_msg;
-    position_state_msg.data = current_position;
-    position_state_pub.publish(position_state_msg);
+    mNode->Motion.PosnMeasured.Refresh();
+    mNode->Motion.VelMeasured.Refresh();
 
-    main_rate.sleep();
+    clearpath_sc_ros::ServoState servo_state;
+    servo_state.position = mNode->Motion.PosnMeasured;
+    servo_state.velocity = mNode->Motion.VelMeasured;
+
+    servo_state.error_code = this->last_error_code;
+
+    servo_state_pub.publish(servo_state);
+
+    status_rate.sleep();
   }
   ros::shutdown();
 }
 
+// Position control thread loop
 void Axis::positionLoop()
 {
   ros::Rate position_rate(500);
@@ -97,7 +107,6 @@ void Axis::positionLoop()
       mNode->Adv.Attn.ClearAttn(attn_mask);
 
       int rem_buffer_slots = mNode->Motion.MovePosnStart(position_target, true);
-      ROS_INFO("Remaining buffer slots: %d", rem_buffer_slots);
       double move_time = mNode->Motion.MovePosnDurationMsec(position_target, true);
 
       // Wait for motion to finish or abort
@@ -111,18 +120,20 @@ void Axis::positionLoop()
       {
         ROS_ERROR("Movement wait timed out");
       }
-      ROS_INFO("Move done? %s", attn_read.cpm.MoveDone ? "True" : "False");
+      this->last_error_code = -1;
     }
     catch (mnErr error)
     {
       ROS_ERROR("Error code: %08x", error.ErrorCode);
       ROS_ERROR("Message: %s", error.ErrorMsg);
+      this->last_error_code = error.ErrorCode;
       ros::Duration(0.5).sleep();
     }
   }
   ros::shutdown();
 }
 
+// Position target subscriber
 void Axis::onPositionTarget(const std_msgs::Float64::ConstPtr target_msg)
 {
   this->position_target = target_msg->data;
