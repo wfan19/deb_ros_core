@@ -2,7 +2,7 @@
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "Clearpath");
+  ros::init(argc, argv, "clearpath");
   ros::NodeHandle n("clearpath");
 
   ClearpathDriver mClearpathDriver(n);
