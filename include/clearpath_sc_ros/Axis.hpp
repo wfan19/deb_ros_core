@@ -10,6 +10,7 @@
 #include <clearpath_sc_ros/ServoState.h>
 #include <clearpath_sc_ros/ServoConfig.h>
 #include <clearpath_sc_ros/GetConfig.h>
+#include <clearpath_sc_ros/HomeAxis.h>
 
 using namespace sFnd;
 using namespace std;
@@ -49,6 +50,12 @@ private:
   bool getConfig(
       clearpath_sc_ros::GetConfig::Request &req,
       clearpath_sc_ros::GetConfig::Response &res
+  );
+
+  ros::ServiceServer homeAxis_service;
+  bool homeAxis(
+      clearpath_sc_ros::HomeAxis::Request &req,
+      clearpath_sc_ros::HomeAxis::Response &res
   );
 };
 

@@ -26,6 +26,17 @@ int Axis::start()
   mNode->Status.AlertsClear();
   mNode->Motion.NodeStopClear();
   mNode->EnableReq(true);
+
+  ros::Time enable_start = ros::Time::now();
+  while(!mNode->Motion.IsReady())
+  {
+    if(ros::Time::now().toSec() - enable_start.toSec() > 2)
+    {
+      ROS_ERROR("%s timed out on enabling servo", axis_name.c_str());
+      return -1;
+    }
+  }
+
   ROS_INFO("Servo enabled");
 
   // Initialize Attn mask
@@ -36,37 +47,14 @@ int Axis::start()
   attn_init_mask.cpm.NotReady = 1;
   mNode->Adv.Attn.Mask = attn_init_mask;
 
-  // Check homing
-  ROS_INFO("Beginning homing");
-  if (mNode->Motion.Homing.HomingValid())
-  {
-    mNode->Motion.Homing.Initiate();
-    ros::Time homing_start = ros::Time::now();
-    ros::Duration timeout(5);
-    while(!mNode->Motion.Homing.WasHomed())
-    {
-      if(ros::Time::now() > homing_start + timeout)
-      {
-        ROS_ERROR("Homing timed out!");
-        return -1;
-      }
-    }
-    ROS_INFO("Motor homing complete");
-  }
-  else
-  {
-    ROS_ERROR("Motor homing invalid");
-    return -1;
-  }
-
   // Start ros publishers
   servo_state_pub = n.advertise<clearpath_sc_ros::ServoState>("state", 10);
 
   // Start ros subscribers
   position_target_sub = n.subscribe("position_target", 1, &Axis::onPositionTarget, this);
 
-  // TODO: Set/get configuration via a service
   getConfig_service = n.advertiseService("get_config", &Axis::getConfig, this);
+  homeAxis_service = n.advertiseService("home_axis", &Axis::homeAxis, this);
 
   // Start threads
   status_thread = thread(&Axis::statusLoop, this);
@@ -103,27 +91,38 @@ void Axis::positionLoop()
   {
     try
     {
-      attnReg attn_mask, attn_read;
-      attn_mask.cpm.MoveDone = 1;
-      attn_mask.cpm.Disabled = 1;
-      attn_mask.cpm.NotReady = 1;
-      mNode->Adv.Attn.ClearAttn(attn_mask);
-
-      int rem_buffer_slots = mNode->Motion.MovePosnStart(position_target, true);
-      double move_time = mNode->Motion.MovePosnDurationMsec(position_target, true);
-
-      // Wait for motion to finish or abort
-      attn_read = mNode->Adv.Attn.WaitForAttn(attn_mask, move_time + 20);
-      if (attn_read.cpm.NotReady || attn_read.cpm.Disabled)
+      if (
+          mNode->Motion.Homing.HomingValid() // Check for valid homing before setting move command
+          && !mNode->Motion.Homing.IsHoming() // Make sure we aren't homing right now
+      )
       {
-        ROS_ERROR("Servo not ready or disabled!! Shutting down program");
-        break;
+        attnReg attn_mask, attn_read;
+        attn_mask.cpm.MoveDone = 1;
+        attn_mask.cpm.Disabled = 1;
+        attn_mask.cpm.NotReady = 1;
+        mNode->Adv.Attn.ClearAttn(attn_mask);
+
+        int rem_buffer_slots = mNode->Motion.MovePosnStart(position_target, true);
+        double move_time = mNode->Motion.MovePosnDurationMsec(position_target, true);
+
+        // Wait for motion to finish or abort
+        attn_read = mNode->Adv.Attn.WaitForAttn(attn_mask, move_time + 20);
+        if (attn_read.cpm.NotReady || attn_read.cpm.Disabled)
+        {
+          ROS_ERROR("Servo not ready or disabled!! Shutting down program");
+          break;
+        }
+        else if (!attn_read.cpm.MoveDone)
+        {
+          ROS_ERROR("Movement wait timed out");
+        }
+        this->last_error_code = -1;
       }
-      else if (!attn_read.cpm.MoveDone)
+      else
       {
-        ROS_ERROR("Movement wait timed out");
+        ROS_ERROR("Servo homing is invalid or is currently homing");
+        ros::Duration(0.2).sleep();
       }
-      this->last_error_code = -1;
     }
     catch (mnErr error)
     {
@@ -142,6 +141,11 @@ void Axis::onPositionTarget(const std_msgs::Float64::ConstPtr target_msg)
   this->position_target = target_msg->data;
 }
 
+// ==================
+//     Services
+// ==================
+
+// Fetch the axis' configuration and return it in the response
 bool Axis::getConfig(
     clearpath_sc_ros::GetConfig::Request &req,
     clearpath_sc_ros::GetConfig::Response &res
@@ -166,5 +170,44 @@ bool Axis::getConfig(
   current_config.encoder_cpr = mNode->Info.PositioningResolution;
 
   res.current_config = current_config;
+  return true;
+}
+
+// Home the axis based on Clearview's configuration
+bool Axis::homeAxis(
+    clearpath_sc_ros::HomeAxis::Request &req,
+    clearpath_sc_ros::HomeAxis::Response &res
+)
+{
+  ROS_INFO("homeAxis(): Beginning homing");
+  try
+  {
+    if (mNode->Motion.Homing.HomingValid())
+    {
+      mNode->Motion.Homing.Initiate();
+      ros::Time homing_start = ros::Time::now();
+      ros::Duration timeout(5);
+      while(!mNode->Motion.Homing.WasHomed())
+      {
+        if(ros::Time::now() > homing_start + timeout)
+        {
+          ROS_ERROR("homeAxis(): Homing timed out!");
+          return false;
+        }
+      }
+      ROS_INFO("homeAxis(): Motor homing complete");
+      ros::Duration(0.2).sleep();
+    }
+    else
+    {
+      ROS_ERROR("homeAxis(): Motor homing invalid");
+      return false;
+    }
+  }
+  catch (mnErr error)
+  {
+    ROS_ERROR("homeAxis(): Error code: %08x while homing", error.ErrorCode);
+    return false;
+  }
   return true;
 }
