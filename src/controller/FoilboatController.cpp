@@ -101,7 +101,6 @@ bool FoilboatController::init()
   else
   {
     ROS_ERROR("Failed to find param /foilboat_controller/odom_topic");
-    return false;
   }
 
   // Initialize target subscriber
