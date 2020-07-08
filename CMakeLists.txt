@@ -155,33 +155,33 @@ include_directories(
 #   ${catkin_LIBRARIES}
 # )
 
-add_library(PIDFF_foilboat src/PIDFF.cpp)
+add_library(PIDFF_foilboat src/controller/PIDFF.cpp)
 target_link_libraries(PIDFF_foilboat ${catkin_LIBRARIES})
 
-add_library(PIDWrapper_foilboat src/PIDWrapper.cpp)
+add_library(PIDWrapper_foilboat src/controller/PIDWrapper.cpp)
 target_link_libraries(PIDWrapper_foilboat ${catkin_LIBRARIES})
 target_link_libraries(PIDWrapper_foilboat PIDFF_foilboat)
 
-add_library(FoilboatController src/FoilboatController.cpp)
+add_library(FoilboatController src/controller/FoilboatController.cpp)
 target_link_libraries(FoilboatController PIDFF_foilboat)
 target_link_libraries(FoilboatController PIDWrapper_foilboat)
 
-add_executable(controller_node src/controller_node.cpp)
+add_executable(controller_node src/controller/controller_node.cpp)
 target_link_libraries(controller_node
   ${catkin_LIBRARIES}
   FoilboatController
 )
 
-add_library(RangeSensorProcessor src/RangeSensorProcessor.cpp)
+add_library(RangeSensorProcessor src/range_sensor_wrapper/RangeSensorProcessor.cpp)
 target_link_libraries(RangeSensorProcessor ${catkin_LIBRARIES})
 
-add_executable(range_sensor_wrapper_node src/range_sensor_wrapper_node.cpp)
+add_executable(range_sensor_wrapper_node src/range_sensor_wrapper/range_sensor_wrapper_node.cpp)
 target_link_libraries(range_sensor_wrapper_node
   ${catkin_LIBRARIES}
   RangeSensorProcessor
 )
 
-add_executable(foilboat_llc_node src/controller_llc_node.cpp)
+add_executable(foilboat_llc_node src/low_level_control/controller_llc_node.cpp)
 target_link_libraries(foilboat_llc_node ${catkin_LIBRARIES})
 
 #############

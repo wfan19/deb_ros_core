@@ -25,7 +25,7 @@ bool FoilboatController::init()
   if(n.getParam("foilboat_controller/roll_controller/pidff", roll_controller_param_map))
   {
     ROS_INFO("Found roll_controller pidff config");
-    PIDFF::PIDConfig roll_controller_config = convertPIDMapParamToStruct(roll_controller_param_map);
+    this->roll_controller_config = convertPIDMapParamToStruct(roll_controller_param_map);
     controller_pid.updatePID(PIDWrapper::ControllerEnum::roll, roll_controller_config);
   }
   else
@@ -38,7 +38,7 @@ bool FoilboatController::init()
   if(n.getParam("foilboat_controller/altitude_rate_controller/pidff", altitude_rate_controller_param_map))
   {
     ROS_INFO("Found altitude_rate pidff config");
-    PIDFF::PIDConfig altitude_rate_controller_config = convertPIDMapParamToStruct(altitude_rate_controller_param_map);
+    this->altitude_rate_controller_config = convertPIDMapParamToStruct(altitude_rate_controller_param_map);
     controller_pid.updatePID(PIDWrapper::ControllerEnum::altitude_rate, altitude_rate_controller_config);
   }
   else
@@ -51,7 +51,7 @@ bool FoilboatController::init()
   if(n.getParam("foilboat_controller/altitude_controller/pidff", altitude_controller_param_map))
   {
     ROS_INFO("Found altitude_controller pidff config");
-    PIDFF::PIDConfig altitude_controller_config = convertPIDMapParamToStruct(altitude_controller_param_map);
+    this->altitude_controller_config = convertPIDMapParamToStruct(altitude_controller_param_map);
     controller_pid.updatePID(PIDWrapper::ControllerEnum::altitude, altitude_controller_config);
   }
   else
@@ -160,6 +160,11 @@ void FoilboatController::start()
   dynamic_reconfigure::Server<foilboat_controller::GainsConfig>::CallbackType onPIDConfig_callback;
   onPIDConfig_callback = boost::bind(&FoilboatController::onPIDConfig, this, _1, _2);
   dynamic_reconfigure_server.setCallback(onPIDConfig_callback);
+
+  // Overwrite dynamic reconfigure's default PID default values with the values read from rosparam
+  controller_pid.updatePID(PIDWrapper::ControllerEnum::roll, this->roll_controller_config);
+  controller_pid.updatePID(PIDWrapper::ControllerEnum::altitude, this->altitude_controller_config);
+  controller_pid.updatePID(PIDWrapper::ControllerEnum::altitude_rate, this->altitude_rate_controller_config);
   
   ros::Timer control_timer = n.createTimer(controller_frequency, &FoilboatController::control, this);
   ros::spin();
