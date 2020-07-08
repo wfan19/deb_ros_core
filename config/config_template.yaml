@@ -1,0 +1,129 @@
+#   This example configuration file will go over all of the parameters
+# of this node, and explain what each of them do, and when to use what.
+
+# Used for the controller itself
+foilboat_controller:
+  # =====================
+  #   Subscriber topics
+  # =====================
+
+  # - Subscribes to a foilboat_controller/FoilboatTarget message
+  # - Uses that as the navigation/control target
+  # - REQUIRED
+  target_topic: /plane_ros/target
+
+  # - Subscribes to a nav_msgs/Odometry message
+  # - Data should be coming from sensor fusion
+  # - Can be substituted with combinations of the three following
+  # topics to test using raw sensor data
+  odom_topic: /plane_ros/odometry/filtered/odom
+
+  # - Subscribes to a sensor_msgs/IMU message
+  # - Uses that to get the current orientation
+  # - Not needed if odom_topic contains orientation data
+  # - Otherwise required as the sole source of orientation data
+  imu_topic: /plane_ros/imu
+
+  # - Subscribes to a sensor_msgs/LaserScan message
+  # - Uses that with the imu orientation to estimate the current altitude
+  # - Not needed if odom_topic contains altitude data
+  laser_topic: /plane_ros/lidar
+
+  # - Subscribes to a geometry_msgs/PoseWithCovarianceStamped message
+  # - This topic should be a pose with a z component being the altitude estimate
+  # adjusted for roll and pitch. None of the other components are used.
+  # - Not needed if odom_topic contains altitude data
+  z_estimate_topic: /plane_ros/z_estimate
+
+  # =====================
+  # Publisher topics
+  # =====================
+
+  # - Publishes a foilboat_controller/FoilboatControl message
+  # - Publishes target flap angles for controlled surfaces
+  # - REQUIRED
+  control_topic: /plane_ros/control
+
+  # - Publishes a foilboat_controller/FoilboatState message
+  # - Publishes current RPY and altitude of boat/plane
+  # - REQUIRED
+  state_topic: /plane_ros/state
+
+  # - Frequency(Hz) of controller
+  # - REQUIRED
+  controller_frequency: 10
+
+  # - Parameters for the PIDFF controllers
+  # - REQUIRED
+  roll_controller:
+    pidff: {p: 0.3, i: 0.1, d: 0.2, ff: 0, i_min: -0.005, i_max: 0.005, min: -0.523, max: 0.523}
+
+  altitude_rate_controller:
+    pidff: {p: 0.25, i: 0.1, d: 0.2, ff: 0, i_min: -0.1, i_max: 0.1, min: -0.523, max: 0.523}
+
+  altitude_controller:
+    pidff: {p: 0.25, i: 0.1, d: 0.2, ff: 0, i_min: -0.005, i_max: 0.005, min: -1, max: 1}
+
+# Used for the range sensor wrapper node
+range_sensor_wrapper:
+  # =====================
+  # Subscriber topics
+  # =====================
+
+  # - Subscribes to a sensor_msgs/IMU message
+  # - Used to obtain orientation to use for altitude estimate
+  # - REQUIRED
+  imu_topic: /plane_ros/imu
+
+  # - Subscribes to a sensor_msgs/LaserScan message
+  # - Used to obtain laser scan from bottom of vehicle to ground
+  # without compensating for roll and pitch
+  # - Use for simulation, otherwise comment it out
+  laser_topic: /plane_ros/lidar
+
+  # - Subscribes to a std_msgs/float64 message
+  # - Used to obtain an ultrasonic scan from bottom of vehicle to water
+  # without compensating for roll and pitch
+  # - Use with real sensor, otherwise comment it out
+  float_topic: /toughsonic/distance/value
+
+  # =====================
+  # Publisher topics
+  # =====================
+
+  # - Publishes a geometry_msgs/PoseWithCovarianceStamped message
+  # - Contains only a Z for estimated altitude, and its corresponding covariance
+  # - REQUIRED
+  z_estimate_topic: /plane_ros/z_estimate
+
+  # - Sensor covariance
+  # - REQUIRED
+  sensor_covariance: 0.04
+
+# Used for the low_level_control/controller_llc node
+# Not needed for simulation
+low_level_control:
+
+  # =====================
+  # Subscriber topics
+  # =====================
+
+  # - Subscribes to a foilboat_controller/FoilboatControl message
+  # - The node adapts the target flap angles here to servo target positions
+  control: /foilboat/control
+
+  # =====================
+  # Publisher topics
+  # =====================
+
+  # - Publishes a std_msgs/float64 message
+  # - Publishes a servo target position in the format of a PWM signal wavelength * 4
+  # - Don't blame me it's just how the fricken maestro driver works
+  left_wing: /minimaestro/leftWing/target
+
+  # - See above
+  right_wing: /minimaestro/rightWing/target
+
+  # - Flap angle range
+  # - Negative is up (negative lift)
+  flap_range: {min: -0.1046, max: 0.5}
