@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>foilboat_controller</name>
+  <name>fcs_ros_deb</name>
   <version>0.0.0</version>
   <description>The foilboat_controller package</description>
 
