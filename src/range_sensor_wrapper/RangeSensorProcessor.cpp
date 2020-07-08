@@ -1,6 +1,6 @@
 #include <string>
 
-#include <foilboat_controller/RangeSensorProcessor.hpp>
+#include <foilboat_controller/range_sensor_wrapper/RangeSensorProcessor.hpp>
 
 RangeSensorProcessor::RangeSensorProcessor(ros::NodeHandle nh)
 {

@@ -3,7 +3,7 @@
 #include "geometry_msgs/Quaternion.h"
 #include "std_msgs/Float64.h"
 
-#include <foilboat_controller/FoilboatController.hpp>
+#include <foilboat_controller/controller/FoilboatController.hpp>
 
 using namespace std;
 FoilboatController::FoilboatController(ros::NodeHandle nh):

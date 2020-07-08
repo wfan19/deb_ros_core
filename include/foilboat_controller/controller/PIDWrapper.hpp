@@ -3,7 +3,7 @@
 
 #include "ros/ros.h"
 
-#include <foilboat_controller/PIDFF.hpp>
+#include "PIDFF.hpp"
 #include <foilboat_controller/FoilboatTarget.h>
 #include <foilboat_controller/FoilboatControl.h>
 #include <foilboat_controller/FoilboatState.h>

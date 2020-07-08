@@ -1,4 +1,4 @@
-#include <foilboat_controller/PIDWrapper.hpp>
+#include <foilboat_controller/controller/PIDWrapper.hpp>
 
 PIDWrapper::PIDWrapper()
 {

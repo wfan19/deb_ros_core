@@ -19,8 +19,8 @@
 #include <foilboat_controller/FoilboatControl.h>
 #include <foilboat_controller/FoilboatState.h>
 
-#include <foilboat_controller/PIDFF.hpp>
-#include <foilboat_controller/PIDWrapper.hpp>
+#include "PIDFF.hpp"
+#include "PIDWrapper.hpp"
 
 using namespace std;
 class FoilboatController
@@ -63,6 +63,10 @@ private:
   foilboat_controller::FoilboatTarget::ConstPtr lastTarget{new foilboat_controller::FoilboatTarget};
 
   PIDWrapper controller_pid;
+
+  PIDFF::PIDConfig roll_controller_config;
+  PIDFF::PIDConfig altitude_controller_config;
+  PIDFF::PIDConfig altitude_rate_controller_config;
 
 };
 

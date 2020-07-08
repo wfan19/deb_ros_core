@@ -1,6 +1,6 @@
 #include "ros/ros.h"
 
-#include <foilboat_controller/FoilboatController.hpp>
+#include <foilboat_controller/controller/FoilboatController.hpp>
 
 int main(int argc, char** argv)
 {
