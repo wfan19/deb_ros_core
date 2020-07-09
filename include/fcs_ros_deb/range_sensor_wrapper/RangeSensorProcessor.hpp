@@ -8,7 +8,7 @@
 #include "std_msgs/Float64.h"
 #include "geometry_msgs/PoseWithCovarianceStamped.h"
 
-#include <foilboat_controller/FoilboatState.h>
+#include <fcs_ros_deb/FoilboatState.h>
 
 class RangeSensorProcessor
 {
@@ -20,7 +20,7 @@ public:
   void run();
 
 private:
-  void onState(const foilboat_controller::FoilboatState::ConstPtr statePtr);
+  void onState(const fcs_ros_deb::FoilboatState::ConstPtr statePtr);
   void onLaser(const sensor_msgs::LaserScan::ConstPtr laserPtr);
   void onFloat(const std_msgs::Float64::ConstPtr floatPtr);
   void publishMsg(double data);
@@ -33,7 +33,7 @@ private:
 
   float sensor_covariance;
 
-  foilboat_controller::FoilboatState::ConstPtr last_state{new foilboat_controller::FoilboatState};
+  fcs_ros_deb::FoilboatState::ConstPtr last_state{new fcs_ros_deb::FoilboatState};
 };
 
 #endif

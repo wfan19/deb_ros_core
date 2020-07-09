@@ -1,10 +1,10 @@
 #include "ros/ros.h"
 
-#include <foilboat_controller/controller/FoilboatController.hpp>
+#include <fcs_ros_deb/controller/FoilboatController.hpp>
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "foilboat_controller_node");
+  ros::init(argc, argv, "fcs_ros_deb_node");
   ros::NodeHandle n;
 
   FoilboatController mFoilboatController(n);

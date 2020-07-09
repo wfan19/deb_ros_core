@@ -1,4 +1,4 @@
-#include <foilboat_controller/controller/PIDFF.hpp>
+#include <fcs_ros_deb/controller/PIDFF.hpp>
 
 PIDFF::PIDFF(double p, double i, double d, double ff, double iMin, double iMax, double Min, double Max)
     : kp(p), ki(i), kd(d), kff(ff), imin(iMin), imax(iMax), min(Min), max(Max)

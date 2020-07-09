@@ -1,7 +1,7 @@
 <launch>
   <arg name="variant" default="foilboat"/>
   <arg name="model" value="$(find foilboat_description)/urdf/$(arg variant)_model.xacro"/>
-  <arg name="rviz_conf" value="$(find foilboat_controller)/rviz/visualize_boat.rviz"/>
+  <arg name="rviz_conf" value="$(find fcs_ros_deb)/rviz/visualize_boat.rviz"/>
 
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rviz_conf)" required="true" />
 </launch>

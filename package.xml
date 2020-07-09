@@ -2,7 +2,7 @@
 <package format="2">
   <name>fcs_ros_deb</name>
   <version>0.0.0</version>
-  <description>The foilboat_controller package</description>
+  <description>The fcs_ros_deb package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->

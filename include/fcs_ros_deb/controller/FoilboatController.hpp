@@ -13,11 +13,11 @@
 #include <tf2/LinearMath/Matrix3x3.h>
 
 #include <dynamic_reconfigure/server.h>
-#include <foilboat_controller/GainsConfig.h>
+#include <fcs_ros_deb/GainsConfig.h>
 
-#include <foilboat_controller/FoilboatTarget.h>
-#include <foilboat_controller/FoilboatControl.h>
-#include <foilboat_controller/FoilboatState.h>
+#include <fcs_ros_deb/FoilboatTarget.h>
+#include <fcs_ros_deb/FoilboatControl.h>
+#include <fcs_ros_deb/FoilboatState.h>
 
 #include "PIDFF.hpp"
 #include "PIDWrapper.hpp"
@@ -38,9 +38,9 @@ private:
   void onLaser(const sensor_msgs::LaserScan::ConstPtr& laserPtr);
   void onZEstimate(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& posePtr);
   void onOdom(const nav_msgs::Odometry::ConstPtr& odomPtr);
-  void onTarget(const foilboat_controller::FoilboatTarget::ConstPtr& targetPtr);
+  void onTarget(const fcs_ros_deb::FoilboatTarget::ConstPtr& targetPtr);
 
-  void onPIDConfig(foilboat_controller::GainsConfig &config, uint32_t level);
+  void onPIDConfig(fcs_ros_deb::GainsConfig &config, uint32_t level);
 
   PIDFF::PIDConfig convertPIDMapParamToStruct(map<string, float> pidConfigMap);
 
@@ -57,10 +57,10 @@ private:
   ros::Publisher state_pub;
 
   tf2::Quaternion lastOrientation;
-  foilboat_controller::FoilboatState last_state;
+  fcs_ros_deb::FoilboatState last_state;
   ros::Time last_laser_time;
 
-  foilboat_controller::FoilboatTarget::ConstPtr lastTarget{new foilboat_controller::FoilboatTarget};
+  fcs_ros_deb::FoilboatTarget::ConstPtr lastTarget{new fcs_ros_deb::FoilboatTarget};
 
   PIDWrapper controller_pid;
 

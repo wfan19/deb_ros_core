@@ -1,4 +1,4 @@
-#include <foilboat_controller/controller/PIDWrapper.hpp>
+#include <fcs_ros_deb/controller/PIDWrapper.hpp>
 
 PIDWrapper::PIDWrapper()
 {
@@ -60,13 +60,13 @@ void PIDWrapper::resetIntegrators()
   roll_controller.resetIntegrator();
 }
 
-foilboat_controller::FoilboatControl PIDWrapper::control(
-  foilboat_controller::FoilboatTarget::ConstPtr target,
-  foilboat_controller::FoilboatState::ConstPtr state,
+fcs_ros_deb::FoilboatControl PIDWrapper::control(
+  fcs_ros_deb::FoilboatTarget::ConstPtr target,
+  fcs_ros_deb::FoilboatState::ConstPtr state,
   double time
 )
 {
-  foilboat_controller::FoilboatControl control_out;
+  fcs_ros_deb::FoilboatControl control_out;
   ROS_INFO("========== Control loop ==========");
   double flap_control = 0;
   if(target->altitudeTarget > 0)

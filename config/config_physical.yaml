@@ -1,4 +1,4 @@
-foilboat_controller:
+fcs_ros_deb:
   # Subscriber topics
   # TODO: Once robot_localization is implemented, this will just be /odom/filtered
   target_topic: /foilboat/target

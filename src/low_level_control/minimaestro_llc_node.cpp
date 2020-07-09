@@ -4,7 +4,7 @@
 
 #include "ros/ros.h"
 #include "std_msgs/Float64.h"
-#include <foilboat_controller/FoilboatControl.h>
+#include <fcs_ros_deb/FoilboatControl.h>
 
 using namespace std;
 
@@ -12,7 +12,7 @@ ros::Publisher left_wing_pub, right_wing_pub;
 
 double flap_min, flap_max;
 
-void onControl(const foilboat_controller::FoilboatControl::ConstPtr controlPtr)
+void onControl(const fcs_ros_deb::FoilboatControl::ConstPtr controlPtr)
 {
     double left_flap = controlPtr->leftFoil;
     double right_flap = controlPtr->rightFoil;

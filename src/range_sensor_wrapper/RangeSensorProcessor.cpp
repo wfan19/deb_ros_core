@@ -1,6 +1,6 @@
 #include <string>
 
-#include <foilboat_controller/range_sensor_wrapper/RangeSensorProcessor.hpp>
+#include <fcs_ros_deb/range_sensor_wrapper/RangeSensorProcessor.hpp>
 
 RangeSensorProcessor::RangeSensorProcessor(ros::NodeHandle nh)
 {
@@ -34,14 +34,14 @@ bool RangeSensorProcessor::init()
   }
 
   // Initialize state subscriber
-  if(n.getParam("foilboat_controller/state_topic", state_topic_name))
+  if(n.getParam("fcs_ros_deb/state_topic", state_topic_name))
   {
     state_sub = n.subscribe(state_topic_name, 1000, &RangeSensorProcessor::onState, this);
     ROS_INFO("State subscriber initialized");
   }
   else
   {
-    ROS_ERROR("Failed to find param /foilboat_controller/state_topic");
+    ROS_ERROR("Failed to find param /fcs_ros_deb/state_topic");
     return false;
   }
 
@@ -76,7 +76,7 @@ void RangeSensorProcessor::run()
   ros::spin();
 }
 
-void RangeSensorProcessor::onState(const foilboat_controller::FoilboatState::ConstPtr statePtr)
+void RangeSensorProcessor::onState(const fcs_ros_deb::FoilboatState::ConstPtr statePtr)
 {
   last_state = statePtr;
 }

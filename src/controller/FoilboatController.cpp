@@ -3,7 +3,7 @@
 #include "geometry_msgs/Quaternion.h"
 #include "std_msgs/Float64.h"
 
-#include <foilboat_controller/controller/FoilboatController.hpp>
+#include <fcs_ros_deb/controller/FoilboatController.hpp>
 
 using namespace std;
 FoilboatController::FoilboatController(ros::NodeHandle nh):
@@ -22,7 +22,7 @@ bool FoilboatController::init()
   // Something like initParams(string paramName, function callback){}
  
   map<std::string, float> roll_controller_param_map, altitude_rate_controller_param_map, altitude_controller_param_map;
-  if(n.getParam("foilboat_controller/roll_controller/pidff", roll_controller_param_map))
+  if(n.getParam("fcs_ros_deb/roll_controller/pidff", roll_controller_param_map))
   {
     ROS_INFO("Found roll_controller pidff config");
     this->roll_controller_config = convertPIDMapParamToStruct(roll_controller_param_map);
@@ -35,7 +35,7 @@ bool FoilboatController::init()
   }
 
   // Initialize pitch controller PID
-  if(n.getParam("foilboat_controller/altitude_rate_controller/pidff", altitude_rate_controller_param_map))
+  if(n.getParam("fcs_ros_deb/altitude_rate_controller/pidff", altitude_rate_controller_param_map))
   {
     ROS_INFO("Found altitude_rate pidff config");
     this->altitude_rate_controller_config = convertPIDMapParamToStruct(altitude_rate_controller_param_map);
@@ -48,7 +48,7 @@ bool FoilboatController::init()
   }
 
   // Initialize altitude controller PID
-  if(n.getParam("foilboat_controller/altitude_controller/pidff", altitude_controller_param_map))
+  if(n.getParam("fcs_ros_deb/altitude_controller/pidff", altitude_controller_param_map))
   {
     ROS_INFO("Found altitude_controller pidff config");
     this->altitude_controller_config = convertPIDMapParamToStruct(altitude_controller_param_map);
@@ -56,96 +56,96 @@ bool FoilboatController::init()
   }
   else
   {
-    ROS_ERROR("Failed to find param /foilboat_controller/altitude_controller/pidff");
+    ROS_ERROR("Failed to find param /fcs_ros_deb/altitude_controller/pidff");
     return false;
   }
 
   string odom_topic_name, imu_topic_name, z_estimate_topic_name, laser_topic_name, target_topic_name, control_topic_name, state_topic_name;
   // Initialize IMU subscriber
-  if(n.getParam("foilboat_controller/imu_topic", imu_topic_name))
+  if(n.getParam("fcs_ros_deb/imu_topic", imu_topic_name))
   {
     imu_sub = n.subscribe(imu_topic_name, 1000, &FoilboatController::onImu, this);
     ROS_INFO("IMU subscriber initialized");
   }
   else
   {
-    ROS_ERROR("Failed to find param /foilboat_controller/imu_topic");
+    ROS_ERROR("Failed to find param /fcs_ros_deb/imu_topic");
   }
 
   // Initialize laser subscriber
-  if(n.getParam("foilboat_controller/laser_topic", laser_topic_name))
+  if(n.getParam("fcs_ros_deb/laser_topic", laser_topic_name))
   {
     laser_sub = n.subscribe(laser_topic_name, 1000, &FoilboatController::onLaser, this);
     ROS_INFO("Laser subscriber initialized");
   }
   else
   {
-    ROS_ERROR("Failed to find param /foilboat_controller/laser_topic");
+    ROS_ERROR("Failed to find param /fcs_ros_deb/laser_topic");
   }
 
   // Initialize z estimate subscriber
-  if(n.getParam("foilboat_controller/z_estimate_topic", z_estimate_topic_name))
+  if(n.getParam("fcs_ros_deb/z_estimate_topic", z_estimate_topic_name))
   {
     z_estimate_sub = n.subscribe(z_estimate_topic_name, 1000, &FoilboatController::onZEstimate, this);
   }
   else
   {
-    ROS_ERROR("Failed to find param /foilboat_controller/z_estimate_topic");
+    ROS_ERROR("Failed to find param /fcs_ros_deb/z_estimate_topic");
   }
 
-  if(n.getParam("foilboat_controller/odom_topic", odom_topic_name))
+  if(n.getParam("fcs_ros_deb/odom_topic", odom_topic_name))
   {
     odom_sub = n.subscribe(odom_topic_name, 1000, &FoilboatController::onOdom, this);
     ROS_INFO("Odom subscriber initialized");
   }
   else
   {
-    ROS_ERROR("Failed to find param /foilboat_controller/odom_topic");
+    ROS_ERROR("Failed to find param /fcs_ros_deb/odom_topic");
   }
 
   // Initialize target subscriber
-  if(n.getParam("foilboat_controller/target_topic", target_topic_name))
+  if(n.getParam("fcs_ros_deb/target_topic", target_topic_name))
   {
     target_sub = n.subscribe(target_topic_name, 1000, &FoilboatController::onTarget, this);
     ROS_INFO("Target subscriber initialized");
   }
   else
   {
-    ROS_ERROR("Failed to find param /foilboat_controller/target_topic");
+    ROS_ERROR("Failed to find param /fcs_ros_deb/target_topic");
     return false;
   }
 
-  if(n.getParam("foilboat_controller/control_topic", control_topic_name))
+  if(n.getParam("fcs_ros_deb/control_topic", control_topic_name))
   {
-    control_pub = n.advertise<foilboat_controller::FoilboatControl>(control_topic_name, 100);
+    control_pub = n.advertise<fcs_ros_deb::FoilboatControl>(control_topic_name, 100);
     ROS_INFO("Control publisher initialized");
   }
   else
   {
-    ROS_ERROR("Failed to find param /foilboat_controller/control_topic");
+    ROS_ERROR("Failed to find param /fcs_ros_deb/control_topic");
     return false;
   }
 
-  if(n.getParam("foilboat_controller/state_topic", state_topic_name))
+  if(n.getParam("fcs_ros_deb/state_topic", state_topic_name))
   {
-    state_pub = n.advertise<foilboat_controller::FoilboatState>(state_topic_name, 100);
+    state_pub = n.advertise<fcs_ros_deb::FoilboatState>(state_topic_name, 100);
     ROS_INFO("State publisher initialized");
   }
   else
   {
-    ROS_ERROR("Failed to find param /foilboat_controller/state_topic");
+    ROS_ERROR("Failed to find param /fcs_ros_deb/state_topic");
     return false;
   }
 
   int frequency;
-  if(n.getParam("foilboat_controller/controller_frequency", frequency))
+  if(n.getParam("fcs_ros_deb/controller_frequency", frequency))
   {
     controller_frequency = ros::Rate(frequency);
     ROS_INFO("Controller frequency initialized");
   }
   else
   {
-    ROS_ERROR("Failed to find param /foilboat_controller/controller_frequency");
+    ROS_ERROR("Failed to find param /fcs_ros_deb/controller_frequency");
     return false;
   }
 
@@ -155,8 +155,8 @@ bool FoilboatController::init()
 void FoilboatController::start()
 {
   // Initialize dynamic reconfigure server, and bind onPIDConfig to it as a callback
-  dynamic_reconfigure::Server<foilboat_controller::GainsConfig> dynamic_reconfigure_server;
-  dynamic_reconfigure::Server<foilboat_controller::GainsConfig>::CallbackType onPIDConfig_callback;
+  dynamic_reconfigure::Server<fcs_ros_deb::GainsConfig> dynamic_reconfigure_server;
+  dynamic_reconfigure::Server<fcs_ros_deb::GainsConfig>::CallbackType onPIDConfig_callback;
   onPIDConfig_callback = boost::bind(&FoilboatController::onPIDConfig, this, _1, _2);
   dynamic_reconfigure_server.setCallback(onPIDConfig_callback);
 
@@ -172,7 +172,7 @@ void FoilboatController::start()
 void FoilboatController::control(const ros::TimerEvent &event)
 {
   // Run control loop
-  foilboat_controller::FoilboatControl controlOut;
+  fcs_ros_deb::FoilboatControl controlOut;
 
   // Only run control loop if we have valid a target and pose estimate
   if(
@@ -183,7 +183,7 @@ void FoilboatController::control(const ros::TimerEvent &event)
     !isnan(lastTarget->rollTarget)
   )
   {
-    foilboat_controller::FoilboatState::ConstPtr current_state_ptr(new foilboat_controller::FoilboatState(last_state));
+    fcs_ros_deb::FoilboatState::ConstPtr current_state_ptr(new fcs_ros_deb::FoilboatState(last_state));
     
     controlOut = controller_pid.control(lastTarget, current_state_ptr, ros::Time::now().toSec());
 
@@ -269,13 +269,13 @@ void FoilboatController::onOdom(const nav_msgs::Odometry::ConstPtr& odomPtr)
 
 
 // Plane pose/altitude target topic subscriber callback
-void FoilboatController::onTarget(const foilboat_controller::FoilboatTarget::ConstPtr& targetPtr)
+void FoilboatController::onTarget(const fcs_ros_deb::FoilboatTarget::ConstPtr& targetPtr)
 {
   this->lastTarget = targetPtr;
 }
 
 // Dynamic reconfigure callback
-void FoilboatController::onPIDConfig(foilboat_controller::GainsConfig &config, uint32_t level)
+void FoilboatController::onPIDConfig(fcs_ros_deb::GainsConfig &config, uint32_t level)
 {
   controller_pid.resetIntegrators();
 

@@ -2,12 +2,12 @@
 # of this node, and explain what each of them do, and when to use what.
 
 # Used for the controller itself
-foilboat_controller:
+fcs_ros_deb:
   # =====================
   #   Subscriber topics
   # =====================
 
-  # - Subscribes to a foilboat_controller/FoilboatTarget message
+  # - Subscribes to a fcs_ros_deb/FoilboatTarget message
   # - Uses that as the navigation/control target
   # - REQUIRED
   target_topic: /plane_ros/target
@@ -39,12 +39,12 @@ foilboat_controller:
   # Publisher topics
   # =====================
 
-  # - Publishes a foilboat_controller/FoilboatControl message
+  # - Publishes a fcs_ros_deb/FoilboatControl message
   # - Publishes target flap angles for controlled surfaces
   # - REQUIRED
   control_topic: /plane_ros/control
 
-  # - Publishes a foilboat_controller/FoilboatState message
+  # - Publishes a fcs_ros_deb/FoilboatState message
   # - Publishes current RPY and altitude of boat/plane
   # - REQUIRED
   state_topic: /plane_ros/state
@@ -108,7 +108,7 @@ low_level_control:
   # Subscriber topics
   # =====================
 
-  # - Subscribes to a foilboat_controller/FoilboatControl message
+  # - Subscribes to a fcs_ros_deb/FoilboatControl message
   # - The node adapts the target flap angles here to servo target positions
   control: /foilboat/control
 
