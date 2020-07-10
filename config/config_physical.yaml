@@ -33,7 +33,7 @@ range_sensor_wrapper:
   # Sensor covariance
   sensor_covariance: 0.04
 
-low_level_control:
+minimaestro_llc:
   left_wing: /minimaestro/leftWing/target
   right_wing: /minimaestro/rightWing/target
 

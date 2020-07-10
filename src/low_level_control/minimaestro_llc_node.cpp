@@ -42,27 +42,27 @@ int main(int argc, char** argv)
     ros::NodeHandle n;
     
     string left_wing_name, right_wing_name, control_name;
-    if(n.getParam("low_level_control/left_wing", left_wing_name))
+    if(n.getParam("minimaestro_llc/left_wing", left_wing_name))
     {
         left_wing_pub = n.advertise<std_msgs::Float64>(left_wing_name, 100);
         ROS_INFO("Left wing publisher initialized");
     }
 
-    if(n.getParam("low_level_control/right_wing", right_wing_name))
+    if(n.getParam("minimaestro_llc/right_wing", right_wing_name))
     {
         right_wing_pub = n.advertise<std_msgs::Float64>(right_wing_name, 100);
         ROS_INFO("Right wing publisher initialized");
     }
 
     ros::Subscriber control_sub;
-    if(n.getParam("low_level_control/control", control_name))
+    if(n.getParam("minimaestro_llc/control", control_name))
     {
         control_sub = n.subscribe(control_name, 1000, onControl);
         ROS_INFO("Control subscriber initialized");
     }
 
     map<string, double> range_map;
-    if(n.getParam("low_level_control/flap_range", range_map))
+    if(n.getParam("minimaestro_llc/flap_range", range_map))
     {
         map<string, double>::iterator range_iterator;
         for(range_iterator = range_map.begin(); range_iterator != range_map.end(); range_iterator++)
