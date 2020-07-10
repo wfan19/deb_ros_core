@@ -60,3 +60,9 @@ add_executable(minimaestro_llc_node
   src/low_level_control/minimaestro_llc_node.cpp
 )
 target_link_libraries(minimaestro_llc_node ${catkin_LIBRARIES})
+
+add_executable(clearpath_llc_node
+  src/low_level_control/clearpath/clearpath_llc_node.cpp
+  src/low_level_control/clearpath/ClearpathLLC.cpp
+)
+target_link_libraries(clearpath_llc_node)
