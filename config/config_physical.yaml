@@ -33,10 +33,21 @@ range_sensor_wrapper:
   # Sensor covariance
   sensor_covariance: 0.04
 
-minimaestro_llc:
-  left_wing: /minimaestro/leftWing/target
-  right_wing: /minimaestro/rightWing/target
+clearpath_llc:
+  control_topic: /foilboat/control
 
-  control: /foilboat/control
+  left_flap:
+    number: 0
+    midpoint: 100
 
-  flap_range: {min: -0.1046, max: 0.5}
+  right_flap:
+    number: 1
+    midpoint: 100
+
+  left_elevator:
+    number: 2
+    midpiont: 100
+
+  right_elevator:
+    number: 3
+    midpoint: 100
