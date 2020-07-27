@@ -1,4 +1,6 @@
-float64 rightFoil
-float64 leftFoil
-float64 elevatorFoil
+float64 rightFlap
+float64 leftFlap
+float64 rightElevator
+float64 leftElevator
+float64 onlyElevator
 float64 altitudeRateTarget
