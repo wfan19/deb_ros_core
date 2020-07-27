@@ -16,8 +16,24 @@ public:
   int init();
 
 private:
-  void onControl(const fcs_ros_deb::FoilboatControl::ConstPtr);
+  void onControl(const fcs_ros_deb::FoilboatControl::ConstPtr control_msg);
+
   ros::NodeHandle n;
+  ros::Subscriber control_sub;
+  ros::Publisher left_flap_pub;
+  ros::Publisher right_flap_pub;
+  ros::Publisher left_elevator_pub;
+  ros::Publisher right_elevator_pub;
+
+  bool using_elevator = false;
+
+  int servo_encoder_cpr{800};
+  double servo_to_flap_ratio{1.0 / 142}; // Radians to rotations
+  double servo_to_elevator_ratio{0.0}; // Radians to rotations
+  int left_flap_servo_midpoint{0}; // Encoder counts
+  int right_flap_servo_midpoint{0};
+  int left_elevator_servo_midpoint{0}; // Encoder counts
+  int right_elevator_servo_midpoint{0};
 };
 
 #endif //SRC_CLEARPATH_LLC_HPP
