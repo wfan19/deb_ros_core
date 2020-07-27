@@ -187,8 +187,6 @@ void FoilboatController::control(const ros::TimerEvent &event)
     
     controlOut = controller_pid.control(lastTarget, current_state_ptr, ros::Time::now().toSec());
 
-    ROS_INFO("Control out: Right foil: %f, Left Foil: %f, Elevator: %f", controlOut.rightFoil, controlOut.leftFoil, controlOut.elevatorFoil);
-
     state_pub.publish(last_state);
     control_pub.publish(controlOut);
   }
@@ -261,7 +259,6 @@ void FoilboatController::onOdom(const nav_msgs::Odometry::ConstPtr& odomPtr)
   last_state.yaw = last_yaw;
 
   // Update altitude and altitude rate estimate
-  // Commented until I can fix Z position localization
   last_state.altitudeRate = (odomPtr->pose.pose.position.z - last_state.altitude);
   last_state.altitude = odomPtr->pose.pose.position.z;
 //  last_state.altitudeRate = odomPtr->twist.twist.linear.z;
