@@ -14,8 +14,8 @@ double flap_min, flap_max;
 
 void onControl(const fcs_ros_deb::FoilboatControl::ConstPtr controlPtr)
 {
-    double left_flap = controlPtr->leftFoil;
-    double right_flap = controlPtr->rightFoil;
+    double left_flap = controlPtr->leftFlap;
+    double right_flap = controlPtr->rightFlap;
 
     // Map left and right flap data from radian angle range (-10deg - 30deg for example) to 0 - 1.
 
