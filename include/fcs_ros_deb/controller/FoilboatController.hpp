@@ -65,6 +65,7 @@ private:
   PIDWrapper controller_pid;
 
   PIDFF::PIDConfig roll_controller_config;
+  PIDFF::PIDConfig pitch_controller_config;
   PIDFF::PIDConfig altitude_controller_config;
   PIDFF::PIDConfig altitude_rate_controller_config;
 

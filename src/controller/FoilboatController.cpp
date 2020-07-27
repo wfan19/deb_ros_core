@@ -18,13 +18,15 @@ FoilboatController::~FoilboatController()
 
 bool FoilboatController::init()
 {
-  // TODO: Rewrite all this initialization garbage
-  // Something like initParams(string paramName, function callback){}
- 
-  map<std::string, float> roll_controller_param_map, altitude_rate_controller_param_map, altitude_controller_param_map;
+  // I don't know if there's a better way to initialize a lot of params than this mess
+
+  map<std::string, float> roll_controller_param_map,
+    pitch_controller_param_map,
+    altitude_rate_controller_param_map,
+    altitude_controller_param_map;
+
   if(n.getParam("fcs_ros_deb/roll_controller/pidff", roll_controller_param_map))
   {
-    ROS_INFO("Found roll_controller pidff config");
     this->roll_controller_config = convertPIDMapParamToStruct(roll_controller_param_map);
     controller_pid.updatePID(PIDWrapper::ControllerEnum::roll, roll_controller_config);
   }
@@ -34,10 +36,15 @@ bool FoilboatController::init()
     return false;
   }
 
-  // Initialize pitch controller PID
+  if(n.getParam("fcs_ros_deb/pitch_controller/pidff", pitch_controller_param_map))
+  {
+    this->pitch_controller_config = convertPIDMapParamToStruct(pitch_controller_param_map);
+    controller_pid.updatePID(PIDWrapper::ControllerEnum::pitch, pitch_controller_config);
+  }
+
+  // Initialize altitude rate controller PID
   if(n.getParam("fcs_ros_deb/altitude_rate_controller/pidff", altitude_rate_controller_param_map))
   {
-    ROS_INFO("Found altitude_rate pidff config");
     this->altitude_rate_controller_config = convertPIDMapParamToStruct(altitude_rate_controller_param_map);
     controller_pid.updatePID(PIDWrapper::ControllerEnum::altitude_rate, altitude_rate_controller_config);
   }
@@ -50,7 +57,6 @@ bool FoilboatController::init()
   // Initialize altitude controller PID
   if(n.getParam("fcs_ros_deb/altitude_controller/pidff", altitude_controller_param_map))
   {
-    ROS_INFO("Found altitude_controller pidff config");
     this->altitude_controller_config = convertPIDMapParamToStruct(altitude_controller_param_map);
     controller_pid.updatePID(PIDWrapper::ControllerEnum::altitude, altitude_controller_config);
   }
@@ -63,10 +69,7 @@ bool FoilboatController::init()
   string odom_topic_name, imu_topic_name, z_estimate_topic_name, laser_topic_name, target_topic_name, control_topic_name, state_topic_name;
   // Initialize IMU subscriber
   if(n.getParam("fcs_ros_deb/imu_topic", imu_topic_name))
-  {
     imu_sub = n.subscribe(imu_topic_name, 1000, &FoilboatController::onImu, this);
-    ROS_INFO("IMU subscriber initialized");
-  }
   else
   {
     ROS_ERROR("Failed to find param /fcs_ros_deb/imu_topic");
@@ -74,10 +77,7 @@ bool FoilboatController::init()
 
   // Initialize laser subscriber
   if(n.getParam("fcs_ros_deb/laser_topic", laser_topic_name))
-  {
     laser_sub = n.subscribe(laser_topic_name, 1000, &FoilboatController::onLaser, this);
-    ROS_INFO("Laser subscriber initialized");
-  }
   else
   {
     ROS_ERROR("Failed to find param /fcs_ros_deb/laser_topic");
@@ -85,19 +85,14 @@ bool FoilboatController::init()
 
   // Initialize z estimate subscriber
   if(n.getParam("fcs_ros_deb/z_estimate_topic", z_estimate_topic_name))
-  {
     z_estimate_sub = n.subscribe(z_estimate_topic_name, 1000, &FoilboatController::onZEstimate, this);
-  }
   else
   {
     ROS_ERROR("Failed to find param /fcs_ros_deb/z_estimate_topic");
   }
 
   if(n.getParam("fcs_ros_deb/odom_topic", odom_topic_name))
-  {
     odom_sub = n.subscribe(odom_topic_name, 1000, &FoilboatController::onOdom, this);
-    ROS_INFO("Odom subscriber initialized");
-  }
   else
   {
     ROS_ERROR("Failed to find param /fcs_ros_deb/odom_topic");
@@ -105,10 +100,7 @@ bool FoilboatController::init()
 
   // Initialize target subscriber
   if(n.getParam("fcs_ros_deb/target_topic", target_topic_name))
-  {
     target_sub = n.subscribe(target_topic_name, 1000, &FoilboatController::onTarget, this);
-    ROS_INFO("Target subscriber initialized");
-  }
   else
   {
     ROS_ERROR("Failed to find param /fcs_ros_deb/target_topic");
@@ -116,10 +108,7 @@ bool FoilboatController::init()
   }
 
   if(n.getParam("fcs_ros_deb/control_topic", control_topic_name))
-  {
     control_pub = n.advertise<fcs_ros_deb::FoilboatControl>(control_topic_name, 100);
-    ROS_INFO("Control publisher initialized");
-  }
   else
   {
     ROS_ERROR("Failed to find param /fcs_ros_deb/control_topic");
@@ -127,10 +116,7 @@ bool FoilboatController::init()
   }
 
   if(n.getParam("fcs_ros_deb/state_topic", state_topic_name))
-  {
     state_pub = n.advertise<fcs_ros_deb::FoilboatState>(state_topic_name, 100);
-    ROS_INFO("State publisher initialized");
-  }
   else
   {
     ROS_ERROR("Failed to find param /fcs_ros_deb/state_topic");
@@ -164,6 +150,7 @@ void FoilboatController::start()
   controller_pid.updatePID(PIDWrapper::ControllerEnum::roll, this->roll_controller_config);
   controller_pid.updatePID(PIDWrapper::ControllerEnum::altitude, this->altitude_controller_config);
   controller_pid.updatePID(PIDWrapper::ControllerEnum::altitude_rate, this->altitude_rate_controller_config);
+  controller_pid.updatePID(PIDWrapper::ControllerEnum::pitch, this->pitch_controller_config);
   
   ros::Timer control_timer = n.createTimer(controller_frequency, &FoilboatController::control, this);
   ros::spin();
@@ -258,6 +245,9 @@ void FoilboatController::onOdom(const nav_msgs::Odometry::ConstPtr& odomPtr)
   last_state.roll = last_roll;
   last_state.yaw = last_yaw;
 
+  last_state.pose = odomPtr->pose.pose;
+  last_state.twist = odomPtr->twist.twist;
+
   // Update altitude and altitude rate estimate
   last_state.altitudeRate = (odomPtr->pose.pose.position.z - last_state.altitude);
   last_state.altitude = odomPtr->pose.pose.position.z;
@@ -298,6 +288,13 @@ void FoilboatController::onPIDConfig(fcs_ros_deb::GainsConfig &config, uint32_t 
             config.d_roll);
   PIDWrapper::PIDGains roll_gains(config.p_roll, config.i_roll, config.d_roll);
   controller_pid.updatePID(PIDWrapper::ControllerEnum::roll, roll_gains);
+
+  ROS_INFO("Pitch controller config: P: %f, I: %f, D: %f",
+            config.p_pitch,
+            config.i_pitch,
+            config.d_pitch);
+  PIDWrapper::PIDGains pitch_gains(config.p_pitch, config.i_pitch, config.d_pitch);
+  controller_pid.updatePID(PIDWrapper::ControllerEnum::pitch, pitch_gains);
 }
 
 // Convert an array of PIDFF controller parameters
