@@ -87,13 +87,13 @@ fcs_ros_deb::FoilboatControl PIDWrapper::control(
 
   double roll_control = roll_controller.update(target->rollTarget, state->roll, time);
   ROS_INFO("Roll control: %f, Roll target: %f, Roll state: %f", roll_control, target->rollTarget, state->roll);
-  control_out.rightFoil = roll_control + flap_control - state->pitch;
-  control_out.leftFoil = -roll_control + flap_control - state->pitch;
+  control_out.rightFlap = roll_control + flap_control - state->pitch;
+  control_out.leftFlap = -roll_control + flap_control - state->pitch;
   
   // control_out.rightFoil = roll_control + elevator_control;
   // control_out.leftFoil = -roll_control + elevator_control;
 
-  control_out.elevatorFoil = elevator_control;
+  control_out.onlyElevator = elevator_control;
 
   return control_out;
 }
