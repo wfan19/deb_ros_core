@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <robot name="foilboat" xmlns:xacro="http://www.ros.org/wiki/xacro">
-  <xacro:include filename="$(find foilboat_description)/urdf/materials.xacro" />
-  <xacro:include filename="$(find foilboat_description)/urdf/foilboat_components.xacro" />
-  <xacro:include filename="$(find foilboat_description)/urdf/macros.xacro" />
+  <xacro:include filename="$(find boat_description_ros_deb)/urdf/materials.xacro" />
+  <xacro:include filename="$(find boat_description_ros_deb)/urdf/foilboat_components.xacro" />
+  <xacro:include filename="$(find boat_description_ros_deb)/urdf/macros.xacro" />
 
   <xacro:property name="length" value="5.25" />
   <xacro:property name="width" value="2.59" />
