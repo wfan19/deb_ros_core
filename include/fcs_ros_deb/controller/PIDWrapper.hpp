@@ -59,6 +59,7 @@ private:
   PIDFF altitude_controller;
   PIDFF altitude_rate_controller;
   PIDFF roll_controller;
+  PIDFF pitch_controller;
 };
 
 #endif
