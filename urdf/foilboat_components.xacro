@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <robot name="foilboat" xmlns:xacro="http://www.ros.org/wiki/xacro">
-  <xacro:include filename="$(find foilboat_description)/urdf/macros.xacro" />
+  <xacro:include filename="$(find boat_description_ros_deb)/urdf/macros.xacro" />
 
   <xacro:macro name="beam" params="name front">
     <link name="${name}_beam">

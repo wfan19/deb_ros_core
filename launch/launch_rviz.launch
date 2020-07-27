@@ -1,7 +1,7 @@
 
 <launch>
-  <arg name="model" value="$(find foilboat_description)/urdf/foilboat_model.xacro"/>
-  <arg name="rviz_conf" value="$(find foilboat_description)/rviz/rvizConfig.rviz"/>
+  <arg name="model" value="$(find boat_description_ros_deb)/urdf/foilboat_model.xacro"/>
+  <arg name="rviz_conf" value="$(find boat_description_ros_deb)/rviz/rvizConfig.rviz"/>
 
   <param name="robot_description" command="$(find xacro)/xacro $(arg model)" />
 
