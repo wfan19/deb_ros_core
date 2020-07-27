@@ -5,7 +5,7 @@
   <node pkg="fcs_ros_deb" type="controller_node" name="fcs_ros_deb_node" output="screen" />
   <node pkg="fcs_ros_deb" type="range_sensor_wrapper_node" name="range_sensor_wrapper_node" output="screen"/>
 
-  <arg name="model" value="$(find foilboat_description)/urdf/planesim_model.xacro"/>
+  <arg name="model" value="$(find boat_description_ros_deb)/urdf/planesim_model.xacro"/>
 
   <param name="robot_description" command="$(find xacro)/xacro $(arg model)" />
 
