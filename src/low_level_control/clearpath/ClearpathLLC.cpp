@@ -13,12 +13,45 @@ ClearpathLLC::~ClearpathLLC()
 
 int ClearpathLLC::init()
 {
-  control_sub = n.subscribe("foilboat/control", 100, &ClearpathLLC::onControl, this);
+  string control_topic_name;
+  if(n.getParam("clearpath_llc/control_topic", control_topic_name))
+  {
+    control_sub = n.subscribe("foilboat/control", 100, &ClearpathLLC::onControl, this);
+  }
+  else
+  {
+    ROS_ERROR("[ClearpathLLC] Missing required parameter clearpath_llc/control_topic");
+    return -1;
+  }
 
-  left_flap_pub = n.advertise<std_msgs::Float64>("clearpath/servo0/position_target", 1, 100);
-  right_flap_pub = n.advertise<std_msgs::Float64>("clearpath/servo1/position_target", 1, 100);
-  left_elevator_pub = n.advertise<std_msgs::Float64>("clearpath/servo2/position_target", 1, 100);
-  right_elevator_pub = n.advertise<std_msgs::Float64>("clearpath/servo3/position_target", 1, 100);
+  string left_flap_numb, right_flap_numb, left_elevator_numb, right_elevator_numb;
+  if(n.getParam("clearpath_llc/left_flap/number", left_flap_numb)
+    && n.getParam("clearpath_llc/right_flap/number", right_flap_numb)
+    && n.getParam("clearpath_llc/left_flap/midpiont", left_flap_servo_midpoint)
+    && n.getParam("clearpath_llc/right_flap/midpoint", right_flap_servo_midpoint))
+  {
+    left_flap_pub = n.advertise<std_msgs::Float64>("clearpath/servo" + left_flap_numb + "/position_target",1, 100);
+    right_flap_pub = n.advertise<std_msgs::Float64>("clearpath/servo" + right_flap_numb + "/position_target", 1, 100);
+  }
+  else
+  {
+    ROS_ERROR("[ClearpathLLC] Missing required parameters for clearpath_llc/left_flap or clearpath_llc/right_flap");
+    return -1;
+  }
+
+  if(n.getParam("clearpath_llc/left_elevator/number", left_flap_numb)
+     && n.getParam("clearpath_llc/right_elevator/number", right_flap_numb)
+     && n.getParam("clearpath_llc/left_elevator/midpoint", left_elevator_servo_midpoint)
+     && n.getParam("clearpath_llc/right_elevator/midpoint", right_elevator_servo_midpoint))
+  {
+    left_elevator_pub = n.advertise<std_msgs::Float64>("clearpath/servo2/position_target", 1, 100);
+    right_elevator_pub = n.advertise<std_msgs::Float64>("clearpath/servo3/position_target", 1, 100);
+  }
+  else
+  {
+    ROS_ERROR("[ClearpathLLC] Missing parameters for clearpath_llc/left_flap or clearpath_llc/right_flap, running LLC without elevators");
+  }
+
   return 0;
 }
 
