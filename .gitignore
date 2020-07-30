@@ -1,2 +1,14 @@
+<<<<<<< HEAD
 fcs_ros_deb/config/config_simulation.yaml
 fcs_ros_deb/config/contig_physical.yaml
+=======
+Exar_USB_Serial_Kernel_Driver/.xr_usb_serial_common.ko.cmd
+Exar_USB_Serial_Kernel_Driver/.xr_usb_serial_common.mod.cmd
+Exar_USB_Serial_Kernel_Driver/.xr_usb_serial_common.mod.o.cmd
+Exar_USB_Serial_Kernel_Driver/.xr_usb_serial_common.o.cmd
+Exar_USB_Serial_Kernel_Driver/modules.order
+Exar_USB_Serial_Kernel_Driver/xr_usb_serial_common.ko
+Exar_USB_Serial_Kernel_Driver/xr_usb_serial_common.mod
+Exar_USB_Serial_Kernel_Driver/xr_usb_serial_common.mod.o
+Exar_USB_Serial_Kernel_Driver/xr_usb_serial_common.o
+>>>>>>> ca8c178... Git: Added .gitignore
