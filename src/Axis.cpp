@@ -81,7 +81,6 @@ void Axis::statusLoop()
 
     status_rate.sleep();
   }
-  ros::shutdown();
 }
 
 // Position control thread loop
@@ -91,48 +90,55 @@ void Axis::positionLoop()
   {
     try
     {
-      if (
-          mNode->Motion.Homing.HomingValid() // Check for valid homing before setting move command
-          && !mNode->Motion.Homing.IsHoming() // Make sure we aren't homing right now
-      )
+      if (mNode->Motion.Homing.HomingValid()) // Check for valid homing before setting move command
       {
-        attnReg attn_mask, attn_read;
-        attn_mask.cpm.MoveDone = 1;
-        attn_mask.cpm.Disabled = 1;
-        attn_mask.cpm.NotReady = 1;
-        mNode->Adv.Attn.ClearAttn(attn_mask);
-
-        int rem_buffer_slots = mNode->Motion.MovePosnStart(position_target, true);
-        double move_time = mNode->Motion.MovePosnDurationMsec(position_target, true);
-
-        // Wait for motion to finish or abort
-        attn_read = mNode->Adv.Attn.WaitForAttn(attn_mask, move_time + 20);
-        if (attn_read.cpm.NotReady || attn_read.cpm.Disabled)
+        if (!mNode->Motion.Homing.IsHoming())
         {
-          ROS_ERROR("Servo not ready or disabled!! Shutting down program");
-          break;
+          attnReg attn_mask, attn_read;
+          attn_mask.cpm.MoveDone = 1;
+          attn_mask.cpm.Disabled = 1;
+          attn_mask.cpm.NotReady = 1;
+          mNode->Adv.Attn.ClearAttn(attn_mask);
+
+          int rem_buffer_slots = mNode->Motion.MovePosnStart(position_target, true);
+          double move_time = mNode->Motion.MovePosnDurationMsec(position_target, true);
+
+          // Wait for motion to finish or abort
+          attn_read = mNode->Adv.Attn.WaitForAttn(attn_mask, move_time + 20);
+          if (attn_read.cpm.NotReady || attn_read.cpm.Disabled)
+          {
+            ROS_ERROR("[%s] Servo not ready or disabled!! Shutting down position thread", axis_name.c_str());
+            break;
+          }
+          else if (!attn_read.cpm.MoveDone)
+          {
+            ROS_ERROR("Movement wait timed out");
+          }
+          this->last_error_code = -1;
         }
-        else if (!attn_read.cpm.MoveDone)
+        else
         {
-          ROS_ERROR("Movement wait timed out");
+          ROS_ERROR("[%s] Currently homing, waiting for homing to complete", axis_name.c_str());
+          while(mNode->Motion.Homing.IsHoming())
+          {
+            ros::Duration(0.5).sleep();
+          }
         }
-        this->last_error_code = -1;
       }
       else
       {
-        ROS_ERROR("Servo homing is invalid or is currently homing");
-        ros::Duration(0.2).sleep();
+        ROS_ERROR("[%s] Servo homing is invalid", axis_name.c_str());
+        return;
       }
     }
     catch (mnErr error)
     {
-      ROS_ERROR("Error code: %08x", error.ErrorCode);
-      ROS_ERROR("Message: %s", error.ErrorMsg);
+      ROS_ERROR("[%s] Error code: %08x", axis_name.c_str(), error.ErrorCode);
+      ROS_ERROR("[%s] Message: %s", axis_name.c_str(), error.ErrorMsg);
       this->last_error_code = error.ErrorCode;
       ros::Duration(0.5).sleep();
     }
   }
-  ros::shutdown();
 }
 
 // Position target subscriber
@@ -179,35 +185,53 @@ bool Axis::homeAxis(
     clearpath_sc_ros::HomeAxis::Response &res
 )
 {
-  ROS_INFO("homeAxis(): Beginning homing");
+  ROS_INFO("[%s] homeAxis(): Beginning homing", axis_name.c_str());
   try
   {
     if (mNode->Motion.Homing.HomingValid())
     {
       mNode->Motion.Homing.Initiate();
       ros::Time homing_start = ros::Time::now();
-      ros::Duration timeout(5);
+      ros::Duration timeout(15);
       while(!mNode->Motion.Homing.WasHomed())
       {
         if(ros::Time::now() > homing_start + timeout)
         {
-          ROS_ERROR("homeAxis(): Homing timed out!");
+          ROS_ERROR("[%s] homeAxis(): Homing timed out!", axis_name.c_str());
           return false;
         }
       }
-      ROS_INFO("homeAxis(): Motor homing complete");
+      ROS_INFO("[%s] homeAxis(): Motor homing complete", axis_name.c_str());
       ros::Duration(0.2).sleep();
     }
     else
     {
-      ROS_ERROR("homeAxis(): Motor homing invalid");
+      ROS_ERROR("[%s] homeAxis(): Motor homing invalid", axis_name.c_str());
       return false;
     }
   }
   catch (mnErr error)
   {
-    ROS_ERROR("homeAxis(): Error code: %08x while homing", error.ErrorCode);
+    ROS_ERROR("[%s] homeAxis(): Error code: %08x while homing", axis_name.c_str(), error.ErrorCode);
     return false;
   }
   return true;
+}
+
+bool Axis::clearAlert(
+    clearpath_sc_ros::ClearAlerts::Request &req,
+    clearpath_sc_ros::ClearAlerts::Response &res
+)
+{
+  // Enable node
+  mNode->EnableReq(false);
+  ros::Duration(0.2).sleep();
+  mNode->Status.AlertsClear();
+  mNode->Motion.NodeStopClear();
+  mNode->EnableReq(true);
+  
+  if(!position_thread.joinable())
+  {
+    position_thread = thread(&Axis::positionLoop, this);
+  }
 }

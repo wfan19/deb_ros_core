@@ -11,6 +11,7 @@
 #include <clearpath_sc_ros/ServoConfig.h>
 #include <clearpath_sc_ros/GetConfig.h>
 #include <clearpath_sc_ros/HomeAxis.h>
+#include <clearpath_sc_ros/ClearAlerts.h>
 
 using namespace sFnd;
 using namespace std;
@@ -56,6 +57,12 @@ private:
   bool homeAxis(
       clearpath_sc_ros::HomeAxis::Request &req,
       clearpath_sc_ros::HomeAxis::Response &res
+  );
+
+  ros::ServiceServer clearAlert_service;
+  bool clearAlert(
+    clearpath_sc_ros::ClearAlerts::Request &req,
+    clearpath_sc_ros::ClearAlerts::Response &res
   );
 };
 
