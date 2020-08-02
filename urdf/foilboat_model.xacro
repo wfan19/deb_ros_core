@@ -138,7 +138,7 @@
 
   <joint name="m8u_joint" type="fixed">
     <parent link="sensor_box_link"/>
-    <child link="gps_link"/>
+    <child link="m8u"/>
     <origin xyz="0 0 0" rpy="0 0 0"/>
   </joint>
 
