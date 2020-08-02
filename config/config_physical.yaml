@@ -37,17 +37,17 @@ clearpath_llc:
   control_topic: /foilboat/control
 
   left_flap:
-    number: 0
-    midpoint: 100
+    number: "2"
+    midpoint: -1800
 
   right_flap:
-    number: 1
-    midpoint: 100
+    number: "0"
+    midpoint: -1800
 
   left_elevator:
-    number: 2
-    midpiont: 100
+    number: "3"
+    midpiont: -6800
 
   right_elevator:
-    number: 3
-    midpoint: 100
+    number: "1"
+    midpoint: -6800
