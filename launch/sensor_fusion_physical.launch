@@ -1,4 +1,21 @@
 <launch>
+
+  <include file="$(find toughsonic_ros_deb)/launch/launch_sensor.launch" />
+  <node pkg="fcs_ros_deb" type="range_sensor_wrapper_node" name="range_sensor_wrapper_node" />
+  
+  <include file="$(find vectornav)/launch/vectornav.launch" />
+  <include file="$(find ublox_gps)/launch/ublox_device.launch">
+      <arg name="node_name" value="ublox_gps"/>
+      <arg name="param_file_name" value="m8u_rover"/>
+  </include>
+
+  <arg name="model" value="$(find boat_description_ros_deb)/urdf/foilboat_model.xacro"/>
+
+  <param name="robot_description" command="$(find xacro)/xacro $(arg model)" />
+
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+
   <node pkg="robot_localization" type="ekf_localization_node" name="foilboat_odom">
     <param name="frequency" value="50" />
     <param name="sensor_timeout" value="0.2" />
@@ -18,7 +35,7 @@
       [false, false, false,
       true, true, true,
       false, false, false,
-      true, true, true,
+      false, false, false,
       true, true, true]
     </rosparam>
 
@@ -37,12 +54,12 @@
 
   <node pkg="robot_localization" type="navsat_transform_node" name="navsat_transform">
     <param name="frequency" value="10" />
-    <param name="yaw_offset" value="-1.57" />
+    <!-- <param name="yaw_offset" value="-1.57" /> -->
 
-    <remap from="odometry/filtered" to="/plane_ros/odometry/filtered/odom" />
-    <remap from="imu/data" to="/plane_ros/imu" />
-    <remap from="gps/fix" to="/plane_ros/gps/fix" />
-    <remap from="odometry/gps" to="/plane_ros/odometry/gps" />
+    <remap from="odometry/filtered" to="/foilboat/odometry/filtered/odom" />
+    <remap from="imu/data" to="/vectornav/IMU" />
+    <remap from="gps/fix" to="/ublox_gps/fix" />
+    <remap from="odometry/gps" to="/foilboat/odometry/gps" />
   </node>
 
   <node pkg="robot_localization" type="ekf_localization_node" name="foilboat_map">
@@ -56,7 +73,7 @@
     <param name="base_link_frame" value="base_link" />
     <param name="world_frame" value="map" />
 
-    <param name="imu0" value="/vectornav/imu" />
+    <param name="imu0" value="/vectornav/IMU" />
     <param name="imu0_differential" value="false"/>
     <param name="imu0_remove_gravitational_acceleration" value="true" />
     <rosparam param="imu0_config">
@@ -80,10 +97,10 @@
     <param name="odom0" value="/plane_ros/odometry/gps" />
     <param name="odom0_differential" value="false" />
     <rosparam param="odom0_config">
-      [true, true, true,
-      true, true, true,
-      true, true, true,
-      true, true, true,
+      [true, true, false,
+      false, false, false,
+      false, false, false,
+      false, false, false,
       false, false, false]
     </rosparam>
 
