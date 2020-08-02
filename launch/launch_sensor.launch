@@ -1,6 +1,6 @@
 <launch>	  
 
-  <rosparam file="$(find toughsonic)/config/params.yaml" command="load" />
-  <node pkg="toughsonic" type="toughsonic_node_main" name="toughsonic_node" />
+  <rosparam file="$(find toughsonic_ros_deb)/config/params.yaml" command="load" />
+  <node pkg="toughsonic_ros_deb" type="toughsonic_node_main" name="toughsonic_node" />
 
 </launch>
