@@ -17,6 +17,7 @@ add_service_files(
   FILES
   GetConfig.srv
   HomeAxis.srv
+  ClearAlerts.srv
 )
 
 generate_messages(
