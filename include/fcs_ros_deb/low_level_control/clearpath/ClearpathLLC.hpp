@@ -28,12 +28,12 @@ private:
   bool using_elevator = false;
 
   int servo_encoder_cpr{800};
-  double servo_to_flap_ratio{1.0 / 142}; // Radians to rotations
-  double servo_to_elevator_ratio{0.0}; // Radians to rotations
+  double servo_to_flap_ratio{142}; // Radians to rotations
+  double servo_to_elevator_ratio{1000}; // Radians to rotations
   int left_flap_servo_midpoint{0}; // Encoder counts
   int right_flap_servo_midpoint{0};
-  int left_elevator_servo_midpoint{0}; // Encoder counts
-  int right_elevator_servo_midpoint{0};
+  int left_elevator_servo_midpoint{-8500}; // Encoder counts
+  int right_elevator_servo_midpoint{-6300};
 };
 
 #endif //SRC_CLEARPATH_LLC_HPP
