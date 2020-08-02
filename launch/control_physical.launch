@@ -2,13 +2,6 @@
 
   <rosparam file="$(find fcs_ros_deb)/config/config_physical.yaml" command="load" />
 
-  <include file="$(find toughsonic)/launch/launch_sensor.launch" />
-  <include file="$(find vectornav)/launch/vectornav.launch" />
-  <include file="$(find ublox_gps)/launch/ublox_device.launch">
-      <arg name="node_name" value="ublox_gps"/>
-      <arg name="param_file_name" value="m8u_rover"/>
-  </include>
-
   <!--  <include file="$(find minimaestro)/launch/launch.launch" />-->
   <node pkg="clearpath_sc_ros" type="clearpath_driver_node" name="clearpath_driver_node" output="screen" />
 
@@ -18,11 +11,4 @@
   <node pkg="fcs_ros_deb" type="range_sensor_wrapper_node" name="range_sensor_wrapper_node" />
 <!--  <node pkg="fcs_ros_deb" type="minimaestro_llc_node" name="minimaestro_llc_node" output="screen" />-->
   <node pkg="fcs_ros_deb" type="clearpath_llc_node" name="clearpath_llc_node" output="screen" />
-
-  <arg name="model" value="$(find boat_description_ros_deb)/urdf/foilboat_model.xacro"/>
-
-  <param name="robot_description" command="$(find xacro)/xacro $(arg model)" />
-
-  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
-  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
 </launch>
