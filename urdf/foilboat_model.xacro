@@ -25,35 +25,6 @@
   <xacro:hull name="left" port="1" />
   <xacro:hull name="right" port="-1" />
 
-  <link name="imu_link">
-    <visual>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
-      <geometry>
-        <sphere radius="0.1"/>
-      </geometry>
-      <material name="orange"/>
-    </visual>
-
-    <collision>
-      <origin xyz="0 0 0" rpy="0 0 0" />
-      <geometry>
-        <sphere radius="0.1" />
-      </geometry>
-    </collision>
-
-    <inertial>
-      <origin xyz="0 0 0" rpy="0 0 0" />
-      <mass value="1" />
-      <xacro:sphere_inertia m="1" r="0.1" />
-    </inertial>
-  </link>
-
-  <joint name="imu_link_joint" type="fixed">
-    <parent link="front_beam"/>
-    <child link="imu_link"/>
-    <origin xyz="0 0 0" rpy="${pi} 0 0"/>
-  </joint>
-
   <link name="toughsonic_link">
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -83,5 +54,92 @@
     <origin xyz="0 0 0" rpy="0 0 0"/>
   </joint>
 
+  <link name="sensor_box_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <sphere radius="0.1"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.1" />
+      </geometry>
+    </collision>
+
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="1" />
+      <xacro:sphere_inertia m="1" r="0.1" />
+    </inertial>
+  </link>
+
+  <joint name="sensor_box_link_joint" type="fixed">
+    <parent link="front_beam" />
+    <child link="sensor_box_link" />
+    <origin xyz="0 0 0" rpy="0 0 0" />
+  </joint>
+
+  <link name="imu_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <sphere radius="0.1"/>
+      </geometry>
+      <material name="orange"/>
+    </visual>
+
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.1" />
+      </geometry>
+    </collision>
+
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="1" />
+      <xacro:sphere_inertia m="1" r="0.1" />
+    </inertial>
+  </link>
+
+  <joint name="imu_link_joint" type="fixed">
+    <parent link="sensor_box_link"/>
+    <child link="imu_link"/>
+    <origin xyz="0 0 0" rpy="${pi} 0 0"/>
+  </joint>
+
+  <!-- GPS -->
+  <link name="m8u">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <sphere radius="0.1"/>
+      </geometry>
+      <material name="orange"/>
+    </visual>
+
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <sphere radius="0.1" />
+      </geometry>
+    </collision>
+
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="1" />
+      <xacro:sphere_inertia m="1" r="0.1" />
+    </inertial>
+  </link>
+
+  <joint name="m8u_joint" type="fixed">
+    <parent link="sensor_box_link"/>
+    <child link="gps_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
 
 </robot>
