@@ -47,6 +47,11 @@ int Axis::start()
   attn_init_mask.cpm.NotReady = 1;
   mNode->Adv.Attn.Mask = attn_init_mask;
 
+  mNode->Limits.SoftLimit1.Refresh();
+  mNode->Limits.SoftLimit2.Refresh();
+  this->max_position = mNode->Limits.SoftLimit1;
+  this->min_position = mNode->Limits.SoftLimit2;
+
   // Start ros publishers
   servo_state_pub = n.advertise<clearpath_sc_ros::ServoState>("state", 10);
 
@@ -99,6 +104,11 @@ void Axis::positionLoop()
           attn_mask.cpm.Disabled = 1;
           attn_mask.cpm.NotReady = 1;
           mNode->Adv.Attn.ClearAttn(attn_mask);
+
+          if (position_target > max_position)
+            position_target = max_position - 1;
+          else if (position_target < min_position)
+            position_target = min_position + 1;
 
           int rem_buffer_slots = mNode->Motion.MovePosnStart(position_target, true);
           double move_time = mNode->Motion.MovePosnDurationMsec(position_target, true);
@@ -174,6 +184,9 @@ bool Axis::getConfig(
   current_config.soft_limit_1 = mNode->Limits.SoftLimit1;
   current_config.soft_limit_2 = mNode->Limits.SoftLimit2;
   current_config.encoder_cpr = mNode->Info.PositioningResolution;
+
+  this->max_position = current_config.soft_limit_1;
+  this->min_position = current_config.soft_limit_2;
 
   res.current_config = current_config;
   return true;

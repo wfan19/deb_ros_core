@@ -34,6 +34,9 @@ private:
   INode *mNode;      // Clearpath node (servo)
   string axis_name;
 
+  int min_position;
+  int max_position;
+
   // Status publishing loop
   void statusLoop();
 
