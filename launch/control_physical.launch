@@ -8,7 +8,6 @@
   <include file="$(find fcs_ros_deb)/launch/sensor_fusion_physical.launch" />
 
   <node pkg="fcs_ros_deb" type="controller_node" name="fcs_ros_deb_node" output="screen" />
-  <node pkg="fcs_ros_deb" type="range_sensor_wrapper_node" name="range_sensor_wrapper_node" />
 <!--  <node pkg="fcs_ros_deb" type="minimaestro_llc_node" name="minimaestro_llc_node" output="screen" />-->
   <node pkg="fcs_ros_deb" type="clearpath_llc_node" name="clearpath_llc_node" output="screen" />
 </launch>
