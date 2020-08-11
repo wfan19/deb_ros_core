@@ -1,8 +1,6 @@
 fcs_ros_deb:
   # Subscriber topics
-  # TODO: Once robot_localization is implemented, this will just be /odom/filtered
   target_topic: /foilboat/target
-  z_estimate_topic: /foilboat/z_estimate
   odom_topic: /foilboat/odometry/filtered/odom 
 
   # Publisher topics
@@ -24,6 +22,7 @@ fcs_ros_deb:
 
 range_sensor_wrapper:
   # Subscriber topics
+  # TODO: Use odom instead of IMU directly
   imu_topic: /vectornav/IMU
   float_topic: /toughsonic/distance/value # Use float instead of laser for real boat
 
