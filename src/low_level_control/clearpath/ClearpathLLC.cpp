@@ -65,11 +65,11 @@ void ClearpathLLC::onControl(const fcs_ros_deb::FoilboatControl::ConstPtr contro
   double left_flap_out, right_flap_out, left_elevator_out, right_elevator_out;
   std_msgs::Float64 left_flap_msg, right_flap_msg, left_elevator_msg, right_elevator_msg;
 
-  left_flap_out = (control_msg->leftFlap / 360.0) * servo_to_flap_ratio * servo_encoder_cpr + left_flap_servo_midpoint;
-  right_flap_out = (control_msg->rightFlap / 360.0) * servo_to_flap_ratio * servo_encoder_cpr + right_flap_servo_midpoint;
+  left_flap_out = (control_msg->leftFlap / 6.28) * servo_to_flap_ratio * servo_encoder_cpr + left_flap_servo_midpoint;
+  right_flap_out = (control_msg->rightFlap / 6.28) * servo_to_flap_ratio * servo_encoder_cpr + right_flap_servo_midpoint;
 
-  left_elevator_out = (control_msg->leftElevator / 360.0) * servo_to_elevator_ratio * servo_encoder_cpr + left_elevator_servo_midpoint;
-  right_elevator_out = (control_msg->rightElevator / 360.0) * servo_to_elevator_ratio * servo_encoder_cpr + right_elevator_servo_midpoint;
+  left_elevator_out = (-control_msg->leftElevator / 6.28) * servo_to_elevator_ratio * servo_encoder_cpr + left_elevator_servo_midpoint;
+  right_elevator_out = (-control_msg->rightElevator / 6.28) * servo_to_elevator_ratio * servo_encoder_cpr + right_elevator_servo_midpoint;
 
   left_flap_msg.data = left_flap_out;
   right_flap_msg.data = right_flap_out;
