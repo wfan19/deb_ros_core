@@ -45,6 +45,7 @@ int Axis::start()
   attn_init_mask.cpm.MoveDone = 1;
   attn_init_mask.cpm.Disabled = 1;
   attn_init_mask.cpm.NotReady = 1;
+  attn_init_mask.cpm.Ready = 1;
   mNode->Adv.Attn.Mask = attn_init_mask;
 
   mNode->Limits.SoftLimit1.Refresh();
@@ -59,7 +60,6 @@ int Axis::start()
     this->max_position = mNode->Limits.SoftLimit2;
     this->min_position = mNode->Limits.SoftLimit1;
   }
-  ROS_INFO("Min/Max: [%d, %d]", min_position, max_position);
 
   // Start ros publishers
   servo_state_pub = n.advertise<clearpath_sc_ros::ServoState>("state", 10);
@@ -115,7 +115,6 @@ void Axis::positionLoop()
           attn_mask.cpm.NotReady = 1;
           mNode->Adv.Attn.ClearAttn(attn_mask);
 
-          ROS_INFO("[%s] Max: %d, min: %d, current position target: %d", axis_name.c_str(), this->max_position, this->min_position, position_target);
           if (position_target > max_position)
             position_target = max_position - 1;
           else if (position_target < min_position)
@@ -128,8 +127,16 @@ void Axis::positionLoop()
           attn_read = mNode->Adv.Attn.WaitForAttn(attn_mask, move_time + 20);
           if (attn_read.cpm.NotReady || attn_read.cpm.Disabled)
           {
-            ROS_ERROR("[%s] Servo not ready or disabled!! Shutting down position thread", axis_name.c_str());
-            break;
+            ROS_ERROR("[%s] Servo not ready or disabled!! Waiting until servo ok", axis_name.c_str());
+            attnReg servo_ready_mask, servo_ready;
+            servo_ready_mask.cpm.Ready = 1;
+            servo_ready = mNode->Adv.Attn.WaitForAttn(servo_ready_mask, 300000);
+            if (!servo_ready.cpm.Ready)
+            {
+              ROS_ERROR("[%s] Servo ready wait timed out, killing program", axis_name.c_str());
+              return;
+            }
+            ROS_INFO("[%s] Servo ready, resuming operation", axis_name.c_str());
           }
           else if (!attn_read.cpm.MoveDone)
           {
@@ -263,11 +270,5 @@ bool Axis::clearAlert(
   mNode->Status.AlertsClear();
   mNode->Motion.NodeStopClear();
   mNode->EnableReq(true);
-  
-  if(!position_thread.joinable())
-  {
-    ROS_INFO("Restarting position thread");
-    position_thread = thread(&Axis::positionLoop, this);
-  }
   return true;
-}i tentatively plan on starting a spotify fam with on campus folks if there’s enough interest? so if you can’t get it to work you’re welcome to join if you want
+}
