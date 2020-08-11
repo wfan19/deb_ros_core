@@ -96,7 +96,7 @@ void RangeSensorProcessor::publishMsg(double data)
   boost::array<float, 36> covariance;
   geometry_msgs::PoseWithCovarianceStamped pose_with_covariance_stamped_out;
 
-  float z_measured = data * cos(last_state->roll) * cos(last_state->pitch);
+  float z_measured = data * cos(last_state->roll) * cos(last_state->pitch) + 0.2; //Manually adjust the z position offset of the sensor
   for(int i = 0; i < 36; i++)
   {
     covariance[i] = 0;
