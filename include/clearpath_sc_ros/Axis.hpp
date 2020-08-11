@@ -41,7 +41,7 @@ private:
   void statusLoop();
 
   // Position control loop
-  double position_target{0};
+  int position_target{0};
   void positionLoop();
 
   ros::Publisher servo_state_pub;

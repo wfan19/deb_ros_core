@@ -49,8 +49,17 @@ int Axis::start()
 
   mNode->Limits.SoftLimit1.Refresh();
   mNode->Limits.SoftLimit2.Refresh();
-  this->max_position = mNode->Limits.SoftLimit1;
-  this->min_position = mNode->Limits.SoftLimit2;
+  if (int(mNode->Limits.SoftLimit1) > int(mNode->Limits.SoftLimit2))
+  {
+    this->max_position = mNode->Limits.SoftLimit1;
+    this->min_position = mNode->Limits.SoftLimit2;
+  }
+  else if (int(mNode->Limits.SoftLimit1) < int(mNode->Limits.SoftLimit2))
+  {
+    this->max_position = mNode->Limits.SoftLimit2;
+    this->min_position = mNode->Limits.SoftLimit1;
+  }
+  ROS_INFO("Min/Max: [%d, %d]", min_position, max_position);
 
   // Start ros publishers
   servo_state_pub = n.advertise<clearpath_sc_ros::ServoState>("state", 10);
@@ -60,6 +69,7 @@ int Axis::start()
 
   getConfig_service = n.advertiseService("get_config", &Axis::getConfig, this);
   homeAxis_service = n.advertiseService("home_axis", &Axis::homeAxis, this);
+  clearAlert_service = n.advertiseService("clear_alert", &Axis::clearAlert, this);
 
   // Start threads
   status_thread = thread(&Axis::statusLoop, this);
@@ -105,6 +115,7 @@ void Axis::positionLoop()
           attn_mask.cpm.NotReady = 1;
           mNode->Adv.Attn.ClearAttn(attn_mask);
 
+          ROS_INFO("[%s] Max: %d, min: %d, current position target: %d", axis_name.c_str(), this->max_position, this->min_position, position_target);
           if (position_target > max_position)
             position_target = max_position - 1;
           else if (position_target < min_position)
@@ -181,12 +192,22 @@ bool Axis::getConfig(
     current_config.torque_unit = current_config.AMPS;
 
   current_config.torque_limit = mNode->Limits.TrqGlobal;
-  current_config.soft_limit_1 = mNode->Limits.SoftLimit1;
-  current_config.soft_limit_2 = mNode->Limits.SoftLimit2;
   current_config.encoder_cpr = mNode->Info.PositioningResolution;
 
-  this->max_position = current_config.soft_limit_1;
-  this->min_position = current_config.soft_limit_2;
+  if (int(mNode->Limits.SoftLimit1) > int(mNode->Limits.SoftLimit2))
+  {
+    this->max_position = mNode->Limits.SoftLimit1;
+    this->min_position = mNode->Limits.SoftLimit2;
+    current_config.max_position = mNode->Limits.SoftLimit1;
+    current_config.min_position = mNode->Limits.SoftLimit2;
+  }
+  else if (int(mNode->Limits.SoftLimit1) < int(mNode->Limits.SoftLimit2))
+  {
+    this->max_position = mNode->Limits.SoftLimit2;
+    this->min_position = mNode->Limits.SoftLimit1;
+    current_config.max_position = mNode->Limits.SoftLimit2;
+    current_config.min_position = mNode->Limits.SoftLimit1;
+  }
 
   res.current_config = current_config;
   return true;
@@ -245,6 +266,8 @@ bool Axis::clearAlert(
   
   if(!position_thread.joinable())
   {
+    ROS_INFO("Restarting position thread");
     position_thread = thread(&Axis::positionLoop, this);
   }
-}
+  return true;
+}i tentatively plan on starting a spotify fam with on campus folks if there’s enough interest? so if you can’t get it to work you’re welcome to join if you want
