@@ -5,5 +5,5 @@ float64 torque_limit
 
 # All distance units are in counts
 float64 encoder_cpr
-float64 soft_limit_1
-float64 soft_limit_2
+float64 min_position
+float64 max_position
