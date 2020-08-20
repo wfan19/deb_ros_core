@@ -50,7 +50,8 @@ public:
   fcs_ros_deb::FoilboatControl control(
     fcs_ros_deb::FoilboatTarget::ConstPtr target,
     fcs_ros_deb::FoilboatState::ConstPtr state,
-    double time
+    double time,
+    int mode
   );
 
 private:
