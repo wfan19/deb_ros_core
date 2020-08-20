@@ -61,3 +61,5 @@ target_link_libraries(clearpath_driver_node
   ${catkin_LIBRARIES}
   libSFoundation
 )
+
+add_dependencies(clearpath_driver_node clearpath_sc_ros_generate_messages_cpp)
