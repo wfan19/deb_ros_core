@@ -75,7 +75,6 @@ fcs_ros_deb::FoilboatControl PIDWrapper::control(
   fcs_ros_deb::FoilboatControl control_out;
   ROS_INFO("========== Control loop ==========");
   double flap_control = 0;
-  // if(state->twist.linear.x > 2.57) {
     if (target->altitudeTarget > 0) {
       double altitude_rate_target = altitude_controller.update(target->altitudeTarget, state->altitude, time);
       ROS_INFO("Altitude rate target: %f, Altitude target: %f, Altitude state: %f", altitude_rate_target,
@@ -85,9 +84,6 @@ fcs_ros_deb::FoilboatControl PIDWrapper::control(
       ROS_INFO("Target flaps: %f, Altitude rate target: %f, Altitude rate state: %f", flap_control,
                altitude_rate_target, state->altitudeRate);
     }
-
-    // Manual elevator control:
-    //   double pitch_control = target->elevatorTarget;
 
     // Pitch angle control:
     // Tries to keep boat flat
@@ -104,16 +100,6 @@ fcs_ros_deb::FoilboatControl PIDWrapper::control(
     control_out.onlyElevator = pitch_control + 0.2 * (flap_control - state->pitch); // Plus pitch for simulation, minus for physical
     control_out.leftElevator = pitch_control + 0.2 * (flap_control + roll_control + state->pitch);
     control_out.rightElevator = pitch_control + 0.2 * (flap_control - roll_control + state->pitch);
-  // }
-  // else
-  // {
-  //   control_out.leftFlap = 0;
-  //   control_out.rightFlap = 0;
-  //   control_out.leftElevator = 0;
-  //   control_out.rightElevator = 0;
-  //   control_out.onlyElevator = 0;
-  //   control_out.altitudeRateTarget = 0;
-  // }
 
   return control_out;
 }
