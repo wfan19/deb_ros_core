@@ -13,7 +13,7 @@
 #include <tf2/LinearMath/Matrix3x3.h>
 
 #include <dynamic_reconfigure/server.h>
-#include <fcs_ros_deb/GainsConfig.h>
+#include <fcs_ros_deb/ControllerConfig.h>
 
 #include <fcs_ros_deb/FoilboatTarget.h>
 #include <fcs_ros_deb/FoilboatControl.h>
@@ -40,12 +40,13 @@ private:
   void onOdom(const nav_msgs::Odometry::ConstPtr& odomPtr);
   void onTarget(const fcs_ros_deb::FoilboatTarget::ConstPtr& targetPtr);
 
-  void onPIDConfig(fcs_ros_deb::GainsConfig &config, uint32_t level);
+  void onConfig(fcs_ros_deb::ControllerConfig &config, uint32_t level);
 
   PIDFF::PIDConfig convertPIDMapParamToStruct(map<string, float> pidConfigMap);
 
   ros::NodeHandle n;
   ros::Rate controller_frequency;
+  int controller_mode{0};
 
   ros::Subscriber imu_sub;
   ros::Subscriber laser_sub;

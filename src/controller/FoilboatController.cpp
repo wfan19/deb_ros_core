@@ -140,20 +140,21 @@ bool FoilboatController::init()
 
 void FoilboatController::start()
 {
-  // Initialize dynamic reconfigure server, and bind onPIDConfig to it as a callback
-  dynamic_reconfigure::Server<fcs_ros_deb::GainsConfig> dynamic_reconfigure_server;
-  dynamic_reconfigure::Server<fcs_ros_deb::GainsConfig>::CallbackType onPIDConfig_callback;
-  onPIDConfig_callback = boost::bind(&FoilboatController::onPIDConfig, this, _1, _2);
-  dynamic_reconfigure_server.setCallback(onPIDConfig_callback);
+  // PID dynamic reconfigure server
+  dynamic_reconfigure::Server<fcs_ros_deb::ControllerConfig> gains_server;
+  dynamic_reconfigure::Server<fcs_ros_deb::ControllerConfig>::CallbackType onConfig_callback;
+  onConfig_callback = boost::bind(&FoilboatController::onConfig, this, _1, _2);
+  gains_server.setCallback(onConfig_callback);
 
   // Overwrite dynamic reconfigure's default PID default values with the values read from rosparam
   controller_pid.updatePID(PIDWrapper::ControllerEnum::roll, this->roll_controller_config);
   controller_pid.updatePID(PIDWrapper::ControllerEnum::altitude, this->altitude_controller_config);
   controller_pid.updatePID(PIDWrapper::ControllerEnum::altitude_rate, this->altitude_rate_controller_config);
   controller_pid.updatePID(PIDWrapper::ControllerEnum::pitch, this->pitch_controller_config);
-  
+
+  // Run control loop on timer
   ros::Timer control_timer = n.createTimer(controller_frequency, &FoilboatController::control, this);
-  ros::spin();
+  ros::spin(); // You spin me right round
 }
 
 void FoilboatController::control(const ros::TimerEvent &event)
@@ -183,6 +184,7 @@ void FoilboatController::control(const ros::TimerEvent &event)
     ROS_INFO("Roll: %f, Pitch: %f, Yaw: %f, pitchTarget: %f, rollTarget: %f",
       last_state.roll, last_state.pitch, last_state.yaw, lastTarget->altitudeTarget, lastTarget->rollTarget);
   }
+  ROS_INFO("Controller mode: %d", this->controller_mode);
 }
 
 // IMU topic subcriber callback
@@ -253,7 +255,7 @@ void FoilboatController::onOdom(const nav_msgs::Odometry::ConstPtr& odomPtr)
     last_state.altitudeRate = (odomPtr->pose.pose.position.z - last_state.altitude);
   }
   last_state.altitude = odomPtr->pose.pose.position.z;
-//  last_state.altitudeRate = odomPtr->twist.twist.linear.z;
+//  last_state.altitudeRate = odomPtr->twist.twist.linear.z; // Maybe one day we will be able to use the actual z rate
 }
 
 
@@ -264,7 +266,7 @@ void FoilboatController::onTarget(const fcs_ros_deb::FoilboatTarget::ConstPtr& t
 }
 
 // Dynamic reconfigure callback
-void FoilboatController::onPIDConfig(fcs_ros_deb::GainsConfig &config, uint32_t level)
+void FoilboatController::onConfig(fcs_ros_deb::ControllerConfig &config, uint32_t level)
 {
   controller_pid.resetIntegrators();
 
@@ -297,6 +299,8 @@ void FoilboatController::onPIDConfig(fcs_ros_deb::GainsConfig &config, uint32_t 
             config.d_pitch);
   PIDWrapper::PIDGains pitch_gains(config.p_pitch, config.i_pitch, config.d_pitch);
   controller_pid.updatePID(PIDWrapper::ControllerEnum::pitch, pitch_gains);
+
+  this->controller_mode = config.mode;
 }
 
 // Convert an array of PIDFF controller parameters
