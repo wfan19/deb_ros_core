@@ -80,7 +80,7 @@
   <joint name="sensor_box_link_joint" type="fixed">
     <parent link="front_beam" />
     <child link="sensor_box_link" />
-    <origin xyz="0 0 0" rpy="0 0 0" />
+    <origin xyz="0 0 0" rpy="0 -0.087 0" />
   </joint>
 
   <link name="imu_link">
