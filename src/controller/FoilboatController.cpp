@@ -173,7 +173,7 @@ void FoilboatController::control(const ros::TimerEvent &event)
   {
     fcs_ros_deb::FoilboatState::ConstPtr current_state_ptr(new fcs_ros_deb::FoilboatState(last_state));
     
-    controlOut = controller_pid.control(lastTarget, current_state_ptr, ros::Time::now().toSec());
+    controlOut = controller_pid.control(lastTarget, current_state_ptr, ros::Time::now().toSec(), this->controller_mode);
 
     state_pub.publish(last_state);
     control_pub.publish(controlOut);
