@@ -91,19 +91,19 @@ fcs_ros_deb::FoilboatControl PIDWrapper::control(
 
     // Pitch angle control:
     // Tries to keep boat flat
-    double target_pitch = 2.5;
+    double target_pitch = target->pitchTarget * 6.28 / 360;
     double pitch_control = -pitch_controller.update(target_pitch, state->pitch, time);
     ROS_INFO("Pitch control: %f, Pitch target: %f, Pitch state: %f, time: %f", pitch_control, target_pitch,
              state->pitch, time);
 
-    double roll_control = roll_controller.update(target->rollTarget, state->roll, time);
+    double roll_control = roll_controller.update(target->rollTarget * 6.28 / 360, state->roll, time);
     ROS_INFO("Roll control: %f, Roll target: %f, Roll state: %f", roll_control, target->rollTarget, state->roll);
-    control_out.rightFlap = roll_control + flap_control + state->pitch;
-    control_out.leftFlap = -roll_control + flap_control + state->pitch;
+    control_out.rightFlap = roll_control + flap_control - state->pitch;
+    control_out.leftFlap = -roll_control + flap_control - state->pitch;
 
-    control_out.onlyElevator = pitch_control + 0.2 * flap_control + state->pitch; // Plus pitch for simulation, minus for physical
-    control_out.leftElevator = pitch_control + 0.2 * (flap_control + roll_control) + state->pitch;
-    control_out.rightElevator = pitch_control + 0.2 * (flap_control - roll_control) + state->pitch;
+    control_out.onlyElevator = pitch_control + 0.2 * (flap_control - state->pitch); // Plus pitch for simulation, minus for physical
+    control_out.leftElevator = pitch_control + 0.2 * (flap_control + roll_control + state->pitch);
+    control_out.rightElevator = pitch_control + 0.2 * (flap_control - roll_control + state->pitch);
   // }
   // else
   // {
