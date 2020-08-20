@@ -23,7 +23,7 @@ generate_messages(
 )
 
 generate_dynamic_reconfigure_options(
-  dynamic_reconfigure/ControllerGains.cfg
+  dynamic_reconfigure/ControllerConfig.cfg
 )
 
 catkin_package(
@@ -48,7 +48,10 @@ target_link_libraries(controller_node
   ${catkin_LIBRARIES}
 )
 
-add_dependencies(controller_node fcs_ros_deb_generate_messages_cpp)
+add_dependencies(controller_node
+  fcs_ros_deb_generate_messages_cpp
+  fcs_ros_deb_gencfg
+)
 
 add_executable(range_sensor_wrapper_node
   src/range_sensor_wrapper/range_sensor_wrapper_node.cpp
