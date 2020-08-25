@@ -96,42 +96,43 @@ fcs_ros_deb::FoilboatControl PIDWrapper::control(
 
     double roll_control = roll_controller.update(target->rollTarget * 6.28 / 360, state->roll, time);
     ROS_INFO("Roll control: %f, Roll target: %f, Roll state: %f", roll_control, target->rollTarget, state->roll);
-
     // Combine PID outputs:
+
+    double pitch_compensation = state->pitch;
 
     switch(mode)
     {
       // Positive pitch comp for physical, negative for sim
       case fcs_ros_deb::Controller_flaps_roll:
-        control_out.rightFlap = roll_control + target->flapTrim - state->pitch;
-        control_out.leftFlap = -roll_control + target->flapTrim - state->pitch;
+        control_out.rightFlap = roll_control + target->flapTrim + 0.5 * pitch_compensation;
+        control_out.leftFlap = -roll_control + target->flapTrim + 0.5 * pitch_compensation;
         control_out.onlyElevator = 0;
         control_out.leftElevator = 0;
         control_out.rightElevator = 0;
         break;
 
       case fcs_ros_deb::Controller_flaps_both:
-        control_out.rightFlap = roll_control + flap_control - state->pitch;
-        control_out.leftFlap = -roll_control + flap_control - state->pitch;
+        control_out.rightFlap = roll_control + flap_control + 0.5 * pitch_compensation;
+        control_out.leftFlap = -roll_control + flap_control + 0.5 * pitch_compensation;
         control_out.onlyElevator = 0;
         control_out.leftElevator = 0;
         control_out.rightElevator = 0;
         break;
 
       case fcs_ros_deb::Controller_both_roll:
-        control_out.rightFlap = roll_control + target->flapTrim - state->pitch;
-        control_out.leftFlap = -roll_control + target->flapTrim - state->pitch;
-        control_out.onlyElevator = pitch_control + 0.2 * (target->flapTrim - state->pitch);
-        control_out.leftElevator = pitch_control + 0.2 * (target->flapTrim + roll_control + state->pitch);
-        control_out.rightElevator = pitch_control + 0.2 * (target->flapTrim - roll_control + state->pitch);
+        control_out.rightFlap = roll_control + target->flapTrim + 0.5 * pitch_compensation;
+        control_out.leftFlap = -roll_control + target->flapTrim + 0.5 * pitch_compensation;
+        control_out.onlyElevator = -pitch_control + 0.2 * (target->flapTrim + pitch_compensation);
+        control_out.leftElevator = -pitch_control + 0.2 * (target->flapTrim + roll_control + pitch_compensation);
+        control_out.rightElevator = -pitch_control + 0.2 * (target->flapTrim - roll_control + pitch_compensation);
         break;
 
       case fcs_ros_deb::Controller_both_both:
-        control_out.rightFlap = roll_control + flap_control - state->pitch;
-        control_out.leftFlap = -roll_control + flap_control - state->pitch;
-        control_out.onlyElevator = pitch_control + 0.2 * (flap_control - state->pitch);
-        control_out.leftElevator = pitch_control + 0.2 * (flap_control + roll_control + state->pitch);
-        control_out.rightElevator = pitch_control + 0.2 * (flap_control - roll_control + state->pitch);
+        control_out.rightFlap = roll_control + flap_control + 0.5 * pitch_compensation;
+        control_out.leftFlap = -roll_control + flap_control + 0.5 * pitch_compensation;
+        control_out.onlyElevator = -pitch_control + 0.2 * (flap_control + pitch_compensation);
+        control_out.leftElevator = -pitch_control + 0.2 * (flap_control + roll_control + pitch_compensation);
+        control_out.rightElevator = -pitch_control + 0.2 * (flap_control - roll_control + pitch_compensation);
         break;
 
       default:
