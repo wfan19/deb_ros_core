@@ -101,7 +101,15 @@ void RangeSensorProcessor::publishMsg(double data)
   {
     covariance[i] = 0;
   }
-  covariance[14] = this->sensor_covariance * cos(last_state->roll) * cos(last_state->pitch);
+  
+  if (z_measured <= 0.2)
+  {
+    covariance[14] = 10000000;
+  }
+  else
+  {
+    covariance[14] = this->sensor_covariance * cos(last_state->roll) * cos(last_state->pitch);
+  }
 
   pose_with_covariance_stamped_out.header.stamp = ros::Time::now();
   pose_with_covariance_stamped_out.header.frame_id = "odom";
