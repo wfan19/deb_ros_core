@@ -1,0 +1,3 @@
+[submodule "vectornav"]
+	path = vectornav
+	url = https://github.com/dawonn/vectornav.git
