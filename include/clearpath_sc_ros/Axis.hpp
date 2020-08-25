@@ -44,6 +44,8 @@ private:
   int position_target{0};
   void positionLoop();
 
+  bool homeAxis();
+
   ros::Publisher servo_state_pub;
   double last_error_code;
 

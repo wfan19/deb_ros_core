@@ -37,8 +37,6 @@ int Axis::start()
     }
   }
 
-  ROS_INFO("Servo enabled");
-
   // Initialize Attn mask
   // Tells servo which attn msgs to send via SDK
   attnReg attn_init_mask;
@@ -61,6 +59,8 @@ int Axis::start()
     this->min_position = mNode->Limits.SoftLimit1;
   }
 
+  this->homeAxis();
+
   // Start ros publishers
   servo_state_pub = n.advertise<clearpath_sc_ros::ServoState>("state", 10);
 
@@ -74,6 +74,7 @@ int Axis::start()
   // Start threads
   status_thread = thread(&Axis::statusLoop, this);
   position_thread = thread(&Axis::positionLoop, this);
+  ROS_INFO("[%s] enabled", axis_name.c_str());
   return 0;
 }
 
@@ -130,6 +131,7 @@ void Axis::positionLoop()
             ROS_ERROR("[%s] Servo not ready or disabled!! Waiting until servo ok", axis_name.c_str());
             attnReg servo_ready_mask, servo_ready;
             servo_ready_mask.cpm.Ready = 1;
+            this->last_error_code = 2;
             servo_ready = mNode->Adv.Attn.WaitForAttn(servo_ready_mask, 300000);
             if (!servo_ready.cpm.Ready)
             {
@@ -142,7 +144,7 @@ void Axis::positionLoop()
           {
             ROS_ERROR("Movement wait timed out");
           }
-          this->last_error_code = -1;
+          this->last_error_code = 0;
         }
         else
         {
@@ -156,6 +158,7 @@ void Axis::positionLoop()
       else
       {
         ROS_ERROR("[%s] Servo homing is invalid", axis_name.c_str());
+        this->last_error_code = 1;
         return;
       }
     }
@@ -165,6 +168,7 @@ void Axis::positionLoop()
       ROS_ERROR("[%s] Message: %s", axis_name.c_str(), error.ErrorMsg);
       this->last_error_code = error.ErrorCode;
       ros::Duration(0.5).sleep();
+      this->last_error_code = error.ErrorCode;
     }
   }
 }
@@ -175,56 +179,7 @@ void Axis::onPositionTarget(const std_msgs::Float64::ConstPtr target_msg)
   this->position_target = target_msg->data;
 }
 
-// ==================
-//     Services
-// ==================
-
-// Fetch the axis' configuration and return it in the response
-bool Axis::getConfig(
-    clearpath_sc_ros::GetConfig::Request &req,
-    clearpath_sc_ros::GetConfig::Response &res
-)
-{
-  clearpath_sc_ros::ServoConfig current_config;
-
-  mNode->Limits.TrqGlobal.Refresh();
-  mNode->Limits.SoftLimit1.Refresh();
-  mNode->Limits.SoftLimit2.Refresh();
-
-  mNode->Info.PositioningResolution.Refresh();
-
-  if (mNode->TrqUnit() == mNode->PCT_MAX)
-    current_config.torque_unit = current_config.PCT_MAX;
-  else if (mNode->TrqUnit() == mNode->AMPS)
-    current_config.torque_unit = current_config.AMPS;
-
-  current_config.torque_limit = mNode->Limits.TrqGlobal;
-  current_config.encoder_cpr = mNode->Info.PositioningResolution;
-
-  if (int(mNode->Limits.SoftLimit1) > int(mNode->Limits.SoftLimit2))
-  {
-    this->max_position = mNode->Limits.SoftLimit1;
-    this->min_position = mNode->Limits.SoftLimit2;
-    current_config.max_position = mNode->Limits.SoftLimit1;
-    current_config.min_position = mNode->Limits.SoftLimit2;
-  }
-  else if (int(mNode->Limits.SoftLimit1) < int(mNode->Limits.SoftLimit2))
-  {
-    this->max_position = mNode->Limits.SoftLimit2;
-    this->min_position = mNode->Limits.SoftLimit1;
-    current_config.max_position = mNode->Limits.SoftLimit2;
-    current_config.min_position = mNode->Limits.SoftLimit1;
-  }
-
-  res.current_config = current_config;
-  return true;
-}
-
-// Home the axis based on Clearview's configuration
-bool Axis::homeAxis(
-    clearpath_sc_ros::HomeAxis::Request &req,
-    clearpath_sc_ros::HomeAxis::Response &res
-)
+bool Axis::homeAxis()
 {
   ROS_INFO("[%s] homeAxis(): Beginning homing", axis_name.c_str());
   try
@@ -257,6 +212,64 @@ bool Axis::homeAxis(
     return false;
   }
   return true;
+}
+
+// ==================
+//     Services
+// ==================
+
+// Fetch the axis' configuration and return it in the response
+bool Axis::getConfig(
+    clearpath_sc_ros::GetConfig::Request &req,
+    clearpath_sc_ros::GetConfig::Response &res
+)
+{
+  clearpath_sc_ros::ServoConfig current_config;
+
+  mNode->Limits.TrqGlobal.Refresh();
+  mNode->Limits.SoftLimit1.Refresh();
+  mNode->Limits.SoftLimit2.Refresh();
+
+  mNode->Info.PositioningResolution.Refresh();
+
+  mNode->Motion.VelLimit.Refresh();
+  
+  current_config.torque_unit = mNode->TrqUnit();
+  current_config.torque_limit = mNode->Limits.TrqGlobal;
+
+  current_config.vel_unit = mNode->VelUnit();
+  current_config.vel_limit = mNode->Motion.VelLimit;
+
+  // TODO: Add accel limit config getting;
+
+  current_config.encoder_cpr = mNode->Info.PositioningResolution;
+
+  if (int(mNode->Limits.SoftLimit1) > int(mNode->Limits.SoftLimit2))
+  {
+    this->max_position = mNode->Limits.SoftLimit1;
+    this->min_position = mNode->Limits.SoftLimit2;
+    current_config.max_position = mNode->Limits.SoftLimit1;
+    current_config.min_position = mNode->Limits.SoftLimit2;
+  }
+  else if (int(mNode->Limits.SoftLimit1) < int(mNode->Limits.SoftLimit2))
+  {
+    this->max_position = mNode->Limits.SoftLimit2;
+    this->min_position = mNode->Limits.SoftLimit1;
+    current_config.max_position = mNode->Limits.SoftLimit2;
+    current_config.min_position = mNode->Limits.SoftLimit1;
+  }
+
+  res.current_config = current_config;
+  return true;
+}
+
+// Home the axis based on Clearview's configuration
+bool Axis::homeAxis(
+    clearpath_sc_ros::HomeAxis::Request &req,
+    clearpath_sc_ros::HomeAxis::Response &res
+)
+{
+  return homeAxis();
 }
 
 bool Axis::clearAlert(
