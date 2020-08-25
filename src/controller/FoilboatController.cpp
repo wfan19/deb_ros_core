@@ -172,7 +172,6 @@ void FoilboatController::control(const ros::TimerEvent &event)
   )
   {
     fcs_ros_deb::FoilboatState::ConstPtr current_state_ptr(new fcs_ros_deb::FoilboatState(last_state));
-    
     controlOut = controller_pid.control(lastTarget, current_state_ptr, ros::Time::now().toSec(), this->controller_mode);
 
     state_pub.publish(last_state);
@@ -198,7 +197,7 @@ void FoilboatController::onImu(const sensor_msgs::Imu::ConstPtr& imuPtr)
   double last_roll, last_pitch, last_yaw;
   quaternion_rotation_matrix.getRPY(last_roll, last_pitch, last_yaw);
 
-  last_state.pitch = last_pitch;
+  last_state.pitch = last_pitch - 0.13;
   last_state.roll = last_roll;
   last_state.yaw = last_yaw;
 }
@@ -223,7 +222,7 @@ void FoilboatController::onLaser(const sensor_msgs::LaserScan::ConstPtr& laserPt
 void FoilboatController::onZEstimate(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& posePtr)
 {
   double z_estimate = posePtr->pose.pose.position.z;
-  if (z_estimate < 35 && z_estimate > 0)
+  if (z_estimate < 35 && z_estimate > 0.21)
   {
     last_state.altitudeRate = (z_estimate - last_state.altitude);// - (ros::Time::now().toSec() - last_laser_time.toSec());
     last_state.altitude = z_estimate;
@@ -262,6 +261,7 @@ void FoilboatController::onOdom(const nav_msgs::Odometry::ConstPtr& odomPtr)
 // Plane pose/altitude target topic subscriber callback
 void FoilboatController::onTarget(const fcs_ros_deb::FoilboatTarget::ConstPtr& targetPtr)
 {
+  ROS_INFO("new target trim: %f", targetPtr->flapTrim);
   this->lastTarget = targetPtr;
 }
 
