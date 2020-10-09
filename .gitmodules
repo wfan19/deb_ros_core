@@ -3,7 +3,7 @@
 	url = https://github.com/dawonn/vectornav.git
 
 [submodule "fcs_deb"]
-	path = fcs_deb
+	path = fcs_ros_deb/lib/fcs_deb
 	url = git@4dctech.com:fcs_deb.git
 
 [submodule "ublox"]
