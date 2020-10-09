@@ -1,0 +1,112 @@
+<launch>
+
+  <rosparam file="$(find pid_ros_deb)/config/config_physical.yaml" command="load" />
+
+  <include file="$(find toughsonic_ros_deb)/launch/launch_sensor.launch" />
+  <node pkg="pid_ros_deb" type="range_sensor_wrapper_node" name="range_sensor_wrapper_node" />
+  
+  <include file="$(find vectornav)/launch/vectornav.launch" />
+  <include file="$(find ublox_gps)/launch/ublox_device.launch">
+      <arg name="node_name" value="ublox_gps"/>
+      <arg name="param_file_name" value="m8u_rover"/>
+  </include>
+
+  <arg name="model_name" default="foilboat" />
+  <arg name="model_file" value="$(find boat_description_ros_deb)/urdf/$(arg model_name)_model.xacro"/>
+
+  <param name="robot_description" command="$(find xacro)/xacro $(arg model_file)" />
+
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+
+  <node pkg="robot_localization" type="ekf_localization_node" name="foilboat_odom">
+    <param name="frequency" value="10" />
+    <param name="sensor_timeout" value="0.2" />
+    <param name="two_d_mode" value="false" />
+    <param name="publish_tf" value="true" />
+    <param name="publish_acceleration" value="true" />
+    <!-- <param name="transform_time_offset" value="0.03" /> -->
+
+    <param name="map_frame" value="map" />
+    <param name="odom_frame" value="odom" />
+    <param name="base_link_frame" value="base_link" />
+    <param name="world_frame" value="odom" />
+
+    <param name="imu0" value="/vectornav/IMU" />
+    <param name="imu0_differential" value="false"/>
+    <param name="imu0_remove_gravitational_acceleration" value="true" />
+    <rosparam param="imu0_config">
+      [false, false, false,
+      true, true, true,
+      false, false, false,
+      false, false, false,
+      true, true, false]
+    </rosparam>
+
+    <param name="pose0" value="/foilboat/z_estimate" />
+    <param name="pose0_differential" value="false" />
+    <rosparam param="pose0_config">
+      [false, false, true,
+      false, false, false,
+      false, false, false,
+      false, false, false,
+      false, false, false]
+    </rosparam>
+
+    <remap from="odometry/filtered" to="/foilboat/odometry/filtered/odom" />
+  </node>
+
+  <node pkg="robot_localization" type="navsat_transform_node" name="navsat_transform">
+    <param name="frequency" value="1" />
+
+    <remap from="odometry/filtered" to="/foilboat/odometry/filtered/odom" />
+    <remap from="imu/data" to="/vectornav/IMU" />
+    <remap from="gps/fix" to="/ublox_gps/fix" />
+    <remap from="odometry/gps" to="/foilboat/odometry/gps" />
+  </node>
+
+  <node pkg="robot_localization" type="ekf_localization_node" name="foilboat_map">
+    <param name="frequency" value="1" />
+    <param name="sensor_timeout" value="0.2" />
+    <param name="two_d_mode" value="false" />
+    <param name="publish_tf" value="true" />
+
+    <param name="map_frame" value="map" />
+    <param name="odom_frame" value="odom" />
+    <param name="base_link_frame" value="base_link" />
+    <param name="world_frame" value="map" />
+
+    <param name="imu0" value="/vectornav/IMU" />
+    <param name="imu0_differential" value="false"/>
+    <param name="imu0_remove_gravitational_acceleration" value="true" />
+    <rosparam param="imu0_config">
+      [false, false, false,
+      true, true, true,
+      false, false, false,
+      false, false, false,
+      true, true, false]
+    </rosparam>
+
+    <param name="pose0" value="/foilboat/z_estimate" />
+    <param name="pose0_differential" value="false"/>
+    <rosparam param="pose0_config">
+      [false, false, true,
+      false, false, false,
+      false, false, false,
+      false, false, false,
+      false, false, false]
+    </rosparam>
+
+    <param name="odom0" value="/plane_ros/odometry/gps" />
+    <param name="odom0_differential" value="false" />
+    <rosparam param="odom0_config">
+      [true, true, false,
+      false, false, false,
+      false, false, false,
+      false, false, false,
+      false, false, false]
+    </rosparam>
+
+    <remap from="odometry/filtered" to="/foilboat/odometry/filtered/map" />
+  </node>
+</launch>

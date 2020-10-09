@@ -1,5 +1,5 @@
-fcs_ros_deb/config/config_simulation.yaml
-fcs_ros_deb/config/contig_physical.yaml
+pid_ros_deb/config/config_simulation.yaml
+pid_ros_deb/config/contig_physical.yaml
 
 clearpath_ros_deb/Exar_USB_Serial_Kernel_Driver/.xr_usb_serial_common.mod.cmd
 clearpath_ros_deb/Exar_USB_Serial_Kernel_Driver/.xr_usb_serial_common.mod.o.cmd

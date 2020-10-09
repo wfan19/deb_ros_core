@@ -1,0 +1,13 @@
+<launch>	  
+
+  <rosparam file="$(find pid_ros_deb)/config/config_physical.yaml" command="load" />
+
+  <!--  <include file="$(find minimaestro)/launch/launch.launch" />-->
+  <node pkg="clearpath_sc_ros" type="clearpath_driver_node" name="clearpath_driver_node" output="screen" />
+
+  <include file="$(find pid_ros_deb)/launch/sensor_fusion_physical.launch" />
+
+  <node pkg="pid_ros_deb" type="controller_node" name="pid_ros_deb_node" output="screen" />
+<!--  <node pkg="pid_ros_deb" type="minimaestro_llc_node" name="minimaestro_llc_node" output="screen" />-->
+  <node pkg="pid_ros_deb" type="clearpath_llc_node" name="clearpath_llc_node" output="screen" />
+</launch>

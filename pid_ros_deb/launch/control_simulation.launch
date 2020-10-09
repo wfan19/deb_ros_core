@@ -1,0 +1,17 @@
+<launch>
+
+  <rosparam file="$(find pid_ros_deb)/config/config_simulation.yaml" command="load" />
+
+  <node pkg="pid_ros_deb" type="controller_node" name="pid_ros_deb_node" output="screen" />
+  <node pkg="pid_ros_deb" type="range_sensor_wrapper_node" name="range_sensor_wrapper_node" output="screen"/>
+
+  <arg name="model" value="$(find boat_description_ros_deb)/urdf/planesim_model.xacro"/>
+
+  <param name="robot_description" command="$(find xacro)/xacro $(arg model)" />
+
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+
+  <include file="$(find pid_ros_deb)/launch/sensor_fusion_simulation.launch" />
+
+</launch>

@@ -1,0 +1,52 @@
+pid_ros_deb:
+  # Subscriber topics
+  target_topic: /foilboat/target
+  odom_topic: /foilboat/odometry/filtered/odom 
+
+  # Publisher topics
+  control_topic: /foilboat/control
+  state_topic: /foilboat/state
+
+  controller_frequency: 10
+
+  # Parameters for the roll controller
+  # Configure min max to be the range of the flaps in radians
+  roll_controller:
+    pidff: {p: 0.5, i: 0.2, d: 0.5, ff: 0, i_min: -0.1, i_max: 0.01, min: -0.1046, max: 0.5}
+
+  altitude_rate_controller:
+    pidff: {p: 0.3, i: 0.0, d: 0, ff: 0, i_min: -0.05, i_max: 0.05, min: -0.1046, max: 0.5}
+
+  altitude_controller:
+    pidff: {p: 0.5, i: 0.0, d: 0, ff: 0, i_min: -0.005, i_max: 0.005, min: -1, max: 1}
+
+range_sensor_wrapper:
+  # Subscriber topics
+  # TODO: Use odom instead of IMU directly
+  imu_topic: /vectornav/IMU
+  float_topic: /toughsonic/distance/value # Use float instead of laser for real boat
+
+  # Publisher topic
+  z_estimate_topic: /foilboat/z_estimate
+
+  # Sensor covariance
+  sensor_covariance: 0.04
+
+clearpath_llc:
+  control_topic: /foilboat/control
+
+  left_flap:
+    number: "2"
+    midpoint: -1800
+
+  right_flap:
+    number: "0"
+    midpoint: -1800
+
+  left_elevator:
+    number: "3"
+    midpiont: -6800
+
+  right_elevator:
+    number: "1"
+    midpoint: -6800
