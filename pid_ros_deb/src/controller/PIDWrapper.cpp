@@ -89,12 +89,12 @@ pid_ros_deb::FoilboatControl PIDWrapper::control(
 
     // Pitch angle control:
     // Tries to keep boat flat
-    double target_pitch = target->pitchTarget * 6.28 / 360;
-    double pitch_control = -pitch_controller.update(target_pitch, state->pitch, time);
+    double target_pitch = target->pitchTarget;
+    double pitch_control = pitch_controller.update(target_pitch, state->pitch, time);
     ROS_INFO("Pitch control: %f, Pitch target: %f, Pitch state: %f, time: %f", pitch_control, target_pitch,
              state->pitch, time);
 
-    double roll_control = roll_controller.update(target->rollTarget * 6.28 / 360, state->roll, time);
+    double roll_control = roll_controller.update(target->rollTarget, state->roll, time);
     ROS_INFO("Roll control: %f, Roll target: %f, Roll state: %f", roll_control, target->rollTarget, state->roll);
     // Combine PID outputs:
 

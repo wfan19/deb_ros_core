@@ -197,7 +197,7 @@ void FoilboatController::onImu(const sensor_msgs::Imu::ConstPtr& imuPtr)
   double last_roll, last_pitch, last_yaw;
   quaternion_rotation_matrix.getRPY(last_roll, last_pitch, last_yaw);
 
-  last_state.pitch = last_pitch - 0.13;
+  last_state.pitch = last_pitch;
   last_state.roll = last_roll;
   last_state.yaw = last_yaw;
 }

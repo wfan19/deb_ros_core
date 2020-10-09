@@ -1,7 +1,9 @@
 pid_ros_deb:
   # Subscriber topics
   target_topic: /foilboat/target
-  odom_topic: /foilboat/odometry/filtered/odom 
+  # odom_topic: /foilboat/odometry/filtered/odom 
+  imu_topic: /vectornav/IMU
+  z_estimate_topic: /foilboat/z_estimate
 
   # Publisher topics
   control_topic: /foilboat/control
