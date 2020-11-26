@@ -6,6 +6,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   geometry_msgs
   dynamic_reconfigure
+  msgs_ros_deb
 )
 
 generate_dynamic_reconfigure_options(
@@ -16,6 +17,7 @@ catkin_package(
   INCLUDE_DIRS include
   CATKIN_DEPENDS
     roscpp
+    msgs_ros_deb
 )
 
 include_directories(
@@ -34,6 +36,12 @@ target_link_libraries(controller_node
 )
 
 add_dependencies(controller_node
-  msgs_ros_deb_generate_message_cpp
-  pid_ros_deb_gencfg
+  ${catkin_EXPORTED_TARGETS}
 )
+
+#====
+add_executable(test_node
+  src/controller/test.cpp
+)
+target_link_libraries(test_node ${catkin_LIBRARIES})
+add_dependencies(test_node ${catkin_EXPORTED_TARGETS})
