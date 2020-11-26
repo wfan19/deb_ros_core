@@ -5,21 +5,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
   geometry_msgs
-  message_generation
   dynamic_reconfigure
-)
-
-add_message_files(
-  FILES
-  FoilboatTarget.msg
-  FoilboatControl.msg
-  FoilboatState.msg
-)
-
-generate_messages(
-  DEPENDENCIES
-  std_msgs
-  geometry_msgs
 )
 
 generate_dynamic_reconfigure_options(
@@ -30,7 +16,6 @@ catkin_package(
   INCLUDE_DIRS include
   CATKIN_DEPENDS
     roscpp
-    message_runtime
 )
 
 include_directories(
