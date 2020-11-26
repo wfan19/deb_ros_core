@@ -38,10 +38,3 @@ target_link_libraries(controller_node
 add_dependencies(controller_node
   ${catkin_EXPORTED_TARGETS}
 )
-
-#====
-add_executable(test_node
-  src/controller/test.cpp
-)
-target_link_libraries(test_node ${catkin_LIBRARIES})
-add_dependencies(test_node ${catkin_EXPORTED_TARGETS})
