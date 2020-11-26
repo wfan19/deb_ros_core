@@ -3,6 +3,7 @@ project(fcs_ros_deb)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
+  msgs_ros_deb
 )
 
 catkin_package(
@@ -10,11 +11,12 @@ catkin_package(
   CATKIN_DEPENDS
     roscpp
     message_runtime
+    msgs_ros_deb
 )
 
 include_directories(
-  ${catkin_INCLUDE_DIRS}
   include
+  ${catkin_INCLUDE_DIRS}
   lib/fcs_deb/src/fcs
 )
 
@@ -24,12 +26,14 @@ add_library(fcs_deb
   ${SRC_fcs_deb}
 )
 
-add_executable(fcs_ros_deb
-  src/fcs_ros_deb.cpp
+add_executable(fcs_node
+  src/fcs_node.cpp
+  src/FCSROSControl.cpp
 )
 
-target_link_libraries(fcs_ros_deb
+target_link_libraries(fcs_node
   ${catkin_LIBRARIES}
   fcs_deb
 )
 
+add_dependencies(fcs_node ${catkin_EXPORTED_TARGETS})
