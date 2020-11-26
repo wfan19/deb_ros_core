@@ -76,7 +76,7 @@ void RangeSensorProcessor::run()
   ros::spin();
 }
 
-void RangeSensorProcessor::onState(const pid_ros_deb::FoilboatState::ConstPtr statePtr)
+void RangeSensorProcessor::onState(const msgs_ros_deb::FoilboatState::ConstPtr statePtr)
 {
   last_state = statePtr;
 }

@@ -67,14 +67,14 @@ void PIDWrapper::resetIntegrators()
   roll_controller.resetIntegrator();
 }
 
-pid_ros_deb::FoilboatControl PIDWrapper::control(
-  pid_ros_deb::FoilboatTarget::ConstPtr target,
-  pid_ros_deb::FoilboatState::ConstPtr state,
+msgs_ros_deb::FoilboatControl PIDWrapper::control(
+  msgs_ros_deb::FoilboatTarget::ConstPtr target,
+  msgs_ros_deb::FoilboatState::ConstPtr state,
   double time,
   int mode
 )
 {
-  pid_ros_deb::FoilboatControl control_out;
+  msgs_ros_deb::FoilboatControl control_out;
   ROS_INFO("========== Control loop ==========");
   double flap_control = 0;
     if (target->altitudeTarget > 0) {

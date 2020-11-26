@@ -49,7 +49,7 @@ target_link_libraries(controller_node
 )
 
 add_dependencies(controller_node
-  pid_ros_deb_generate_messages_cpp
+  msgs_ros_deb_generate_message_cpp
   pid_ros_deb_gencfg
 )
 
@@ -61,14 +61,14 @@ target_link_libraries(range_sensor_wrapper_node
   ${catkin_LIBRARIES}
 )
 
-add_dependencies(range_sensor_wrapper_node pid_ros_deb_generate_messages_cpp)
+add_dependencies(range_sensor_wrapper_node msgs_ros_deb_generate_message_cpp)
 
 add_executable(minimaestro_llc_node
   src/low_level_control/minimaestro_llc_node.cpp
 )
 target_link_libraries(minimaestro_llc_node ${catkin_LIBRARIES})
 
-add_dependencies(minimaestro_llc_node pid_ros_deb_generate_messages_cpp)
+add_dependencies(minimaestro_llc_node msgs_ros_deb_generate_message_cpp)
 
 add_executable(clearpath_llc_node
   src/low_level_control/clearpath/clearpath_llc_node.cpp
@@ -78,4 +78,4 @@ target_link_libraries(clearpath_llc_node
   ${catkin_LIBRARIES}
 )
 
-add_dependencies(clearpath_llc_node pid_ros_deb_generate_messages_cpp)
+add_dependencies(clearpath_llc_node msgs_ros_deb_generate_message_cpp)

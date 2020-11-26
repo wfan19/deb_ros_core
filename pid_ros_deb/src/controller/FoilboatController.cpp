@@ -108,7 +108,7 @@ bool FoilboatController::init()
   }
 
   if(n.getParam("pid_ros_deb/control_topic", control_topic_name))
-    control_pub = n.advertise<pid_ros_deb::FoilboatControl>(control_topic_name, 100);
+    control_pub = n.advertise<msgs_ros_deb::FoilboatControl>(control_topic_name, 100);
   else
   {
     ROS_ERROR("Failed to find param /pid_ros_deb/control_topic");
@@ -116,7 +116,7 @@ bool FoilboatController::init()
   }
 
   if(n.getParam("pid_ros_deb/state_topic", state_topic_name))
-    state_pub = n.advertise<pid_ros_deb::FoilboatState>(state_topic_name, 100);
+    state_pub = n.advertise<msgs_ros_deb::FoilboatState>(state_topic_name, 100);
   else
   {
     ROS_ERROR("Failed to find param /pid_ros_deb/state_topic");
@@ -160,7 +160,7 @@ void FoilboatController::start()
 void FoilboatController::control(const ros::TimerEvent &event)
 {
   // Run control loop
-  pid_ros_deb::FoilboatControl controlOut;
+  msgs_ros_deb::FoilboatControl controlOut;
 
   // Only run control loop if we have valid a target and pose estimate
   if(
@@ -171,7 +171,7 @@ void FoilboatController::control(const ros::TimerEvent &event)
     !isnan(lastTarget->rollTarget)
   )
   {
-    pid_ros_deb::FoilboatState::ConstPtr current_state_ptr(new pid_ros_deb::FoilboatState(last_state));
+    msgs_ros_deb::FoilboatState::ConstPtr current_state_ptr(new msgs_ros_deb::FoilboatState(last_state));
     controlOut = controller_pid.control(lastTarget, current_state_ptr, ros::Time::now().toSec(), this->controller_mode);
 
     state_pub.publish(last_state);
@@ -259,7 +259,7 @@ void FoilboatController::onOdom(const nav_msgs::Odometry::ConstPtr& odomPtr)
 
 
 // Plane pose/altitude target topic subscriber callback
-void FoilboatController::onTarget(const pid_ros_deb::FoilboatTarget::ConstPtr& targetPtr)
+void FoilboatController::onTarget(const msgs_ros_deb::FoilboatTarget::ConstPtr& targetPtr)
 {
   ROS_INFO("new target trim: %f", targetPtr->flapTrim);
   this->lastTarget = targetPtr;

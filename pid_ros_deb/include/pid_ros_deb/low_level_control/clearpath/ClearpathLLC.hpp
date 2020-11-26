@@ -4,7 +4,7 @@
 #include "ros/ros.h"
 #include "std_msgs/Float64.h"
 
-#include <pid_ros_deb/FoilboatControl.h>
+#include <msgs_ros_deb/FoilboatControl.h>
 
 using namespace std;
 class ClearpathLLC
@@ -16,7 +16,7 @@ public:
   int init();
 
 private:
-  void onControl(const pid_ros_deb::FoilboatControl::ConstPtr control_msg);
+  void onControl(const msgs_ros_deb::FoilboatControl::ConstPtr control_msg);
 
   ros::NodeHandle n;
   ros::Subscriber control_sub;

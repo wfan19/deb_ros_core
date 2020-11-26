@@ -15,9 +15,9 @@
 #include <dynamic_reconfigure/server.h>
 #include <pid_ros_deb/ControllerConfig.h>
 
-#include <pid_ros_deb/FoilboatTarget.h>
-#include <pid_ros_deb/FoilboatControl.h>
-#include <pid_ros_deb/FoilboatState.h>
+#include <msgs_ros_deb/FoilboatTarget.h>
+#include <msgs_ros_deb/FoilboatControl.h>
+#include <msgs_ros_deb/FoilboatState.h>
 
 #include "PIDFF.hpp"
 #include "PIDWrapper.hpp"
@@ -38,7 +38,7 @@ private:
   void onLaser(const sensor_msgs::LaserScan::ConstPtr& laserPtr);
   void onZEstimate(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& posePtr);
   void onOdom(const nav_msgs::Odometry::ConstPtr& odomPtr);
-  void onTarget(const pid_ros_deb::FoilboatTarget::ConstPtr& targetPtr);
+  void onTarget(const msgs_ros_deb::FoilboatTarget::ConstPtr& targetPtr);
 
   void onConfig(pid_ros_deb::ControllerConfig &config, uint32_t level);
 
@@ -58,10 +58,10 @@ private:
   ros::Publisher state_pub;
 
   tf2::Quaternion lastOrientation;
-  pid_ros_deb::FoilboatState last_state;
+  msgs_ros_deb::FoilboatState last_state;
   ros::Time last_laser_time;
 
-  pid_ros_deb::FoilboatTarget::ConstPtr lastTarget{new pid_ros_deb::FoilboatTarget};
+  msgs_ros_deb::FoilboatTarget::ConstPtr lastTarget{new msgs_ros_deb::FoilboatTarget};
 
   PIDWrapper controller_pid;
 

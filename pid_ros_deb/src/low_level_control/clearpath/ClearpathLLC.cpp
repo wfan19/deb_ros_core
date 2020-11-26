@@ -60,7 +60,7 @@ int ClearpathLLC::init()
   return 0;
 }
 
-void ClearpathLLC::onControl(const pid_ros_deb::FoilboatControl::ConstPtr control_msg)
+void ClearpathLLC::onControl(const msgs_ros_deb::FoilboatControl::ConstPtr control_msg)
 {
   double left_flap_out, right_flap_out, left_elevator_out, right_elevator_out;
   std_msgs::Float64 left_flap_msg, right_flap_msg, left_elevator_msg, right_elevator_msg;

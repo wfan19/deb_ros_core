@@ -4,9 +4,9 @@
 #include "ros/ros.h"
 
 #include "PIDFF.hpp"
-#include <pid_ros_deb/FoilboatTarget.h>
-#include <pid_ros_deb/FoilboatControl.h>
-#include <pid_ros_deb/FoilboatState.h>
+#include <msgs_ros_deb/FoilboatTarget.h>
+#include <msgs_ros_deb/FoilboatControl.h>
+#include <msgs_ros_deb/FoilboatState.h>
 
 class PIDWrapper
 {
@@ -47,9 +47,9 @@ public:
   void updatePID(ControllerEnum controller, PIDFF::PIDConfig config);
   void resetIntegrators();
 
-  pid_ros_deb::FoilboatControl control(
-    pid_ros_deb::FoilboatTarget::ConstPtr target,
-    pid_ros_deb::FoilboatState::ConstPtr state,
+  msgs_ros_deb::FoilboatControl control(
+    msgs_ros_deb::FoilboatTarget::ConstPtr target,
+    msgs_ros_deb::FoilboatState::ConstPtr state,
     double time,
     int mode
   );
